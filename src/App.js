@@ -10,8 +10,8 @@ const App = () => {
     const [activeTab, setActiveTab] = useState('hooks'); // 'hooks' or 'script'
 
     // --- API & CONFIGURATION ---
-    // IMPORTANT: Replace with your actual Gemini API Key
-    const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"; 
+    // The API Key is now read from a secure environment variable
+    const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY; 
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     // IMPORTANT: Replace with your actual Stripe Checkout Link
@@ -20,6 +20,10 @@ const App = () => {
 
     // --- HANDLERS ---
     const handleGenerate = async () => {
+        if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+            setError('API Key is not configured. Please follow the setup instructions.');
+            return;
+        }
         if (!topic) {
             setError('Please enter a video topic.');
             return;
