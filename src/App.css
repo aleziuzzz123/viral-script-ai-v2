@@ -1,35 +1,9 @@
-/* ... Your existing CSS from before ... */
-/* At the end of the file, add these new and updated styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
 
-/* --- UPGRADED HEADER & NEW NAV --- */
-.app-header { background-color: #050505; padding: 1rem 2rem; border-bottom: 1px solid #27272A; }
-.header-content { display: flex; justify-content: space-between; align-items: center; }
-.header-left { display: flex; align-items: center; gap: 2rem; }
-.logo { font-size: 1.5rem; font-weight: bold; }
-.main-nav { display: flex; gap: 1.5rem; }
-.nav-link { color: #A1A1AA; font-weight: 500; text-decoration: none; transition: color 0.2s; }
-.nav-link:hover { color: white; }
-.nav-link.active { color: white; font-weight: bold; }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* --- NEW USER MENU DROPDOWN --- */
-.user-menu-container { position: relative; }
-.user-menu-button { width: 40px; height: 40px; border-radius: 50%; background-color: #3F3F46; color: white; border: none; font-size: 1rem; font-weight: bold; cursor: pointer; }
-.user-dropdown { position: absolute; top: 50px; right: 0; background: #18181B; border: 1px solid #27272A; border-radius: 8px; width: 220px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 20; }
-.dropdown-info { padding: 1rem; border-bottom: 1px solid #27272A; font-size: 0.9rem; color: #A1A1AA; }
-.dropdown-info strong { color: white; }
-.dropdown-link { display: block; width: 100%; padding: 0.75rem 1rem; background: none; border: none; text-align: left; color: #E5E7EB; text-decoration: none; font-size: 0.9rem; }
-.dropdown-link:hover { background-color: #27272A; }
-.dropdown-link.logout { color: #F87171; }
-
-
-/* --- UPGRADED DASHBOARD & CARDS --- */
-.dashboard-grid { padding: 2rem; }
-.dashboard-header h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; }
-.dashboard-header p { color: #A1A1AA; }
-
-.info-card { background: #18181B; border: 1px solid #27272A; border-radius: 12px; padding: 1.5rem; }
-.card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
-.card-header h4 { margin: 0; font-size: 1rem; color: #A1A1AA; font-weight: 500; }
-.credit-balance { font-size: 3.5rem; font-weight: 800; color: white; margin: 0 0 1rem 0; line-height: 1; }
-.history-list { list-style: none; padding: 0; margin: 0; space-y: 0.75rem; }
-.history-list li { font-size: 0.9rem; color: #A1A1AA; }
+body {
+  background-color: #100C14; /* Set our primary background color */
+}
