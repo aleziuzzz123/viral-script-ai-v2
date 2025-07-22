@@ -6,12 +6,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'brand-background': '#100C14',
-        'brand-container': '#1A1620',
-        'brand-accent': '#A3FF00', // Lime Green
-        'brand-accent-secondary': '#F9F871', // Cyber Yellow
-        'brand-text-primary': '#FFFFFF',
-        'brand-text-secondary': '#A8A2B3',
+        'brand-background': '#120F1A',
+        'brand-container': '#1E1A2A',
+        'brand-accent': '#F43F5E', // Magenta Pink
+        'brand-text-primary': '#F0F2F5',
+        'brand-text-secondary': '#A09CB0',
+        'brand-border': '#2D283D',
       }
     },
   },
