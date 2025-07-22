@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './supabaseClient';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import './App.css'; // We will use one CSS file
+import './App.css';
 
-// --- Reusable Components (from your original code) ---
+// --- Reusable Components ---
 const Header = React.memo(({ session }) => {
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -25,7 +25,6 @@ const Header = React.memo(({ session }) => {
     );
 });
 
-// --- NEW Engaging Landing Page Component ---
 const LandingPage = () => (
     <div className="hero-section">
         <div className="hero-content">
@@ -41,9 +40,6 @@ const LandingPage = () => (
     </div>
 );
 
-// --- Your Existing App Components ---
-const GeneratorInput = ({ handleGenerate, isLoading, error }) => { /* Your component code here */ };
-const ResultsDisplay = ({ generatedContent }) => { /* Your component code here */ };
 const Footer = React.memo(() => (
     <footer className="footer">
         <p>&copy; {new Date().getFullYear()} Viral Script AI. All Rights Reserved.</p>
@@ -56,22 +52,19 @@ const App = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [generatedContent, setGeneratedContent] = useState(null);
-    const [topic, setTopic] = useState(''); // Added topic state
+    const [topic, setTopic] = useState('');
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
         });
-
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
         });
-
         return () => subscription.unsubscribe();
     }, []);
 
     const handleGenerate = useCallback(async () => {
-        // We will add credit checks here later
         if (!topic) {
             setError('Please enter a video topic.');
             return;
@@ -79,9 +72,8 @@ const App = () => {
         setIsLoading(true);
         setError('');
         setGeneratedContent(null);
-
         try {
-            const response = await fetch('/.netlify/functions/generate', { // Adjusted to correct path
+            const response = await fetch('/.netlify/functions/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ topic }),
@@ -118,7 +110,7 @@ const App = () => {
                         {error && <p className="error-text">{error}</p>}
                         {isLoading && <div className="loader"></div>}
                         {generatedContent && (
-                            <div className="results-display"> 
+                            <div className="results-display">
                                 {generatedContent.hooks.map((hook, index) => (
                                     <div key={index} className="script-card">
                                         <h3>Hook #{index + 1}</h3>
