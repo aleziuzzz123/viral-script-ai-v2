@@ -119,7 +119,7 @@ const App = () => {
                         <Auth
                             supabaseClient={supabase}
                             appearance={{ theme: ThemeSupa }}
-                            providers={['google', 'github']}
+                            providers={['google']} // <-- THE ONLY CHANGE IS HERE
                             theme="dark"
                         />
                     </div>
