@@ -11,7 +11,6 @@ const HistoryIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="
 
 // --- Main App Component ---
 const App = () => {
-    // ... (All your existing state variables: session, profile, etc.)
     const [session, setSession] = useState(null);
     const [profile, setProfile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -19,9 +18,8 @@ const App = () => {
     const [generatedContent, setGeneratedContent] = useState(null);
     const [topic, setTopic] = useState('');
     const [showAuthModal, setShowAuthModal] = useState(false);
-    const [showUserMenu, setShowUserMenu] = useState(false); // New state for dropdown
+    const [showUserMenu, setShowUserMenu] = useState(false);
 
-    // ... (All your existing useEffect and handleGenerate functions)
     useEffect(() => {
       supabase.auth.getSession().then(({ data: { session } }) => { setSession(session); });
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -51,7 +49,6 @@ const App = () => {
         setGeneratedContent(null);
         
         try {
-            // ... (Your existing try/catch block for credit deduction and API call)
             const { error: updateError } = await supabase.from('profiles').update({ credits: profile.credits - 1 }).eq('id', session.user.id);
             if (updateError) throw updateError;
             setProfile(prev => ({ ...prev, credits: prev.credits - 1 }));
@@ -74,19 +71,26 @@ const App = () => {
 
     return (
         <div className="app-container">
-            {/* --- MODAL (No Change) --- */}
-            {showAuthModal && ( <div className="modal-overlay"> ... </div> )}
+            {showAuthModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <button onClick={() => setShowAuthModal(false)} className="close-button">&times;</button>
+                        <h3 className="auth-title">Your Scripts Are Ready!</h3>
+                        <p className="auth-subtitle">Create a free account to view them and get 5 bonus credits.</p>
+                        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google']} theme="dark" />
+                    </div>
+                </div>
+            )}
 
-            {/* --- NEW UPGRADED HEADER & NAV --- */}
             <header className="app-header">
                 <div className="header-content">
                     <div className="header-left">
                         <h1 className="logo">Viral Script AI</h1>
                         {session && (
                             <nav className="main-nav">
-                                <a href="#" className="nav-link active">Dashboard</a>
-                                <a href="#" className="nav-link">Buy Credits</a>
-                                <a href="#" className="nav-link">History</a>
+                                <a href="/" className="nav-link active">Dashboard</a>
+                                <a href="/" className="nav-link">Buy Credits</a>
+                                <a href="/" className="nav-link">History</a>
                             </nav>
                         )}
                     </div>
@@ -94,14 +98,14 @@ const App = () => {
                         {session && profile ? (
                             <div className="user-menu-container">
                                 <button onClick={() => setShowUserMenu(!showUserMenu)} className="user-menu-button">
-                                    {profile.email ? profile.email.charAt(0).toUpperCase() : 'A'}
+                                    {session.user.email ? session.user.email.charAt(0).toUpperCase() : 'A'}
                                 </button>
                                 {showUserMenu && (
                                     <div className="user-dropdown">
                                         <div className="dropdown-info">
-                                            Signed in as<br/><strong>{profile.email}</strong>
+                                            Signed in as<br/><strong>{session.user.email}</strong>
                                         </div>
-                                        <a href="#" className="dropdown-link">Account Settings</a>
+                                        <a href="/" className="dropdown-link">Account Settings</a>
                                         <button onClick={async () => await supabase.auth.signOut()} className="dropdown-link logout">
                                             Sign Out
                                         </button>
@@ -117,7 +121,6 @@ const App = () => {
 
             <main>
                 {session ? (
-                    // --- NEW LOGGED-IN DASHBOARD VIEW ---
                     <div className="dashboard-grid">
                         <div className="dashboard-main">
                             <div className="dashboard-header">
@@ -125,7 +128,11 @@ const App = () => {
                                 <p>Welcome back! Let's create your next viral hit.</p>
                             </div>
                             <div className="generator-view">
-                                {/* ... Generator Input ... */}
+                                <div className="input-container">
+                                    <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to invest in stocks'" />
+                                    <button onClick={handleGenerate} disabled={isLoading}>{isLoading ? 'Analyzing...' : 'Generate Scripts'}</button>
+                                </div>
+                                {error && <p className="error-text">{error}</p>}
                             </div>
                         </div>
                         <div className="dashboard-sidebar">
@@ -151,14 +158,30 @@ const App = () => {
                         </div>
                     </div>
                 ) : (
-                    // --- LOGGED-OUT LANDING PAGE VIEW ---
                     <div className="hero-section">
-                        {/* ... Your existing Hero Section ... */}
+                        <div className="hero-content">
+                            <h1 className="hero-headline">Stop Guessing. Start Going Viral.</h1>
+                            <p className="hero-subheadline">Generate proven, high-impact video hooks and scripts for your videos.</p>
+                            <div className="input-container">
+                                <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to invest in stocks'" />
+                                <button onClick={handleGenerate} disabled={isLoading}>{isLoading ? 'Analyzing...' : 'Generate Your First Script'}</button>
+                            </div>
+                        </div>
                     </div>
                 )}
                 
-                {/* --- Results Display --- */}
-                {generatedContent && ( <div className="results-display-container"> ... </div> )}
+                {generatedContent && (
+                    <div className="results-display-container">
+                        <div className="results-display">
+                            {generatedContent.hooks.map((hook, index) => (
+                                <div key={index} className="script-card">
+                                    <h3>Hook #{index + 1}</h3>
+                                    <p>{hook.text}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </main>
             <footer className="footer">
                 <p>&copy; {new Date().getFullYear()} Viral Script AI. All Rights Reserved.</p>
