@@ -3,8 +3,7 @@ exports.handler = async function (event, context) {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  // Now accepts the new wizard inputs
-  const { topic, goal, tone, audience } = JSON.parse(event.body);
+  const { topic } = JSON.parse(event.body);
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
   if (!topic) {
@@ -16,23 +15,17 @@ exports.handler = async function (event, context) {
 
   const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
   
-  // --- THE NEW, "SUPERCHARGED" AI PROMPT ---
   const prompt = `
-    You are "Blueprint AI", a world-class viral video strategist. Your goal is to create a complete "Viral Video Blueprint" for the user.
-    The user's inputs are:
-    - Video Topic: "${topic}"
-    - Primary Goal: "${goal || 'Go Viral'}"
-    - Desired Tone: "${tone || 'Engaging'}"
-    - Target Audience: "${audience || 'A general audience'}"
+    You are "Blueprint AI", a world-class viral video strategist. Your goal is to create a complete "Viral Video Blueprint" for the user's topic: "${topic}".
 
     Generate a comprehensive blueprint as a single, valid JSON object. The JSON object must have three top-level keys: "hooks", "script", and "production_plan".
 
-    1.  **hooks**: An array of exactly 5 hooks. Each hook in the array must be an object with two keys:
+    1.  **hooks**: An array of exactly 5 hooks. Each hook in the array must be an object with three keys:
         - "text": The hook text (string, max 15 words).
         - "score": A "Viral Score" (integer, 70-100) predicting its viral potential.
-        - "analysis": A brief explanation of why the hook works (string).
+        - "analysis": A brief, one-sentence explanation of why the hook works (string).
 
-    2.  **script**: A full 30-second video script (string). It MUST include "Delivery Coach" notes in parentheses, like "(Say this line quickly and with energy)".
+    2.  **script**: A full 30-second video script (string). It MUST include "Delivery Coach" notes in parentheses, like "(Say this line quickly and with energy)". The script should be formatted with newlines (\\n) for readability.
 
     3.  **production_plan**: An object with three keys:
         - "visuals": An array of 3-4 specific, shot-by-shot visual ideas (array of strings).
@@ -44,9 +37,7 @@ exports.handler = async function (event, context) {
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
     });
 
     if (!response.ok) {
@@ -59,14 +50,10 @@ exports.handler = async function (event, context) {
     if (data.candidates && data.candidates.length > 0) {
         const rawText = data.candidates[0].content.parts[0].text;
         const cleanedText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        return {
-            statusCode: 200,
-            body: cleanedText,
-        };
+        return { statusCode: 200, body: cleanedText };
     } else {
         return { statusCode: 500, body: JSON.stringify({ error: 'No content generated' }) };
     }
-
   } catch (error) {
     return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
