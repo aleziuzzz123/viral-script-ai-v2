@@ -1,27 +1,46 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { supabase } from './supabaseClient'; // Import our new supabase client
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
 
 // --- Reusable, Optimized Components ---
 
-// Memoized Header to prevent re-renders
-const Header = React.memo(({ stripeLink }) => (
-    <header className="bg-gray-900 text-white shadow-lg">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
-                Viral Script AI
-            </h1>
-            <a 
-                href={stripeLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105"
-            >
-                Buy Credits
-            </a>
-        </div>
-    </header>
-));
+// Updated Header to show user info and a Logout button
+const Header = React.memo(({ session }) => {
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+    };
 
-// Memoized Hero section
+    return (
+        <header className="bg-gray-900 text-white shadow-lg">
+            <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
+                    Viral Script AI
+                </h1>
+                {session ? (
+                    <div className="flex items-center space-x-4">
+                        <span className="text-gray-300 text-sm hidden sm:block">{session.user.email}</span>
+                        <button 
+                            onClick={handleLogout}
+                            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105"
+                        >
+                            Logout
+                        </button>
+                    </div>
+                ) : (
+                    <a 
+                        href="#auth-form" // Link to the login form
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105"
+                    >
+                        Login / Sign Up
+                    </a>
+                )}
+            </div>
+        </header>
+    );
+});
+
+// Memoized Hero section (No changes needed)
 const Hero = React.memo(() => (
     <div className="text-center py-12 md:py-20 px-4">
         <h2 className="text-4xl md:text-6xl font-extrabold text-white mb-4">
@@ -33,31 +52,39 @@ const Hero = React.memo(() => (
     </div>
 ));
 
-// Input component that receives state and handlers as props
-const GeneratorInput = ({ topic, setTopic, handleGenerate, isLoading, error }) => (
-    <div className="max-w-2xl mx-auto px-4">
-        <div className="relative">
-            <input
-                type="text"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder="e.g., 'How to invest in stocks'"
-                className="w-full p-4 pr-32 rounded-lg bg-gray-800 text-white border-2 border-gray-700 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500 transition duration-200"
-                disabled={isLoading}
-            />
-            <button
-                onClick={() => handleGenerate(topic)}
-                disabled={isLoading || !topic}
-                className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform"
-            >
-                {isLoading ? 'Generating...' : 'Generate'}
-            </button>
-        </div>
-        {error && <p className="text-red-400 text-center mt-4">{error}</p>}
-    </div>
-);
+// GeneratorInput component (No changes needed for now)
+const GeneratorInput = ({ handleGenerate, isLoading, error }) => {
+    const [localTopic, setLocalTopic] = useState('');
 
-// Results component with its own internal state for the active tab
+    const onGenerateClick = () => {
+        handleGenerate(localTopic);
+    };
+
+    return (
+        <div className="max-w-2xl mx-auto px-4">
+            <div className="relative">
+                <input
+                    type="text"
+                    value={localTopic}
+                    onChange={(e) => setLocalTopic(e.target.value)}
+                    placeholder="e.g., 'How to invest in stocks'"
+                    className="w-full p-4 pr-32 rounded-lg bg-gray-800 text-white border-2 border-gray-700 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500 transition duration-200"
+                    disabled={isLoading}
+                />
+                <button
+                    onClick={onGenerateClick}
+                    disabled={isLoading || !localTopic}
+                    className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-6 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform"
+                >
+                    {isLoading ? 'Generating...' : 'Generate'}
+                </button>
+            </div>
+            {error && <p className="text-red-400 text-center mt-4">{error}</p>}
+        </div>
+    );
+};
+
+// ResultsDisplay component (No changes needed)
 const ResultsDisplay = ({ generatedContent }) => {
     const [activeTab, setActiveTab] = useState('hooks');
 
@@ -106,7 +133,7 @@ const ResultsDisplay = ({ generatedContent }) => {
     );
 };
 
-// Memoized Footer
+// Memoized Footer (No changes needed)
 const Footer = React.memo(() => (
     <footer className="text-center py-8 mt-20 text-gray-500">
         <p>&copy; {new Date().getFullYear()} Viral Script AI. All Rights Reserved.</p>
@@ -115,18 +142,29 @@ const Footer = React.memo(() => (
 
 
 // --- Main App Component ---
-// This now only manages state and composes the other components.
+// This now manages the user session and orchestrates the UI.
 const App = () => {
-    const [topic, setTopic] = useState('');
+    const [session, setSession] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [generatedContent, setGeneratedContent] = useState(null);
 
-    // IMPORTANT: Replace with your actual Stripe Checkout Link
-    const STRIPE_CHECKOUT_LINK = "YOUR_STRIPE_CHECKOUT_LINK";
+    // Check for a user session when the app loads
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+        });
 
-    const handleGenerate = useCallback(async (currentTopic) => {
-        if (!currentTopic) {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    const handleGenerate = useCallback(async (topic) => {
+        // We will add the credit check logic here in the next step
+        if (!topic) {
             setError('Please enter a video topic.');
             return;
         }
@@ -138,7 +176,7 @@ const App = () => {
             const response = await fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic: currentTopic }),
+                body: JSON.stringify({ topic: topic }),
             });
 
             if (!response.ok) {
@@ -155,27 +193,41 @@ const App = () => {
         } finally {
             setIsLoading(false);
         }
-    }, []); // Empty dependency array means this function is created only once.
+    }, []);
 
     return (
         <div className="bg-gray-900 min-h-screen text-white font-sans">
-            <Header stripeLink={STRIPE_CHECKOUT_LINK} />
+            <Header session={session} />
             <main>
-                <Hero />
-                <GeneratorInput 
-                    topic={topic}
-                    setTopic={setTopic}
-                    handleGenerate={handleGenerate}
-                    isLoading={isLoading}
-                    error={error}
-                />
-                {isLoading && (
-                    <div className="text-center mt-8">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
-                        <p className="mt-2 text-gray-400">The AI is thinking... this can take a moment.</p>
+                {!session ? (
+                    // If user is NOT logged in, show the Auth form
+                    <div id="auth-form" className="max-w-md mx-auto mt-12 p-8 bg-gray-800 rounded-xl">
+                         <h3 className="text-2xl font-bold text-center text-white mb-6">Join Viral Script AI</h3>
+                        <Auth
+                            supabaseClient={supabase}
+                            appearance={{ theme: ThemeSupa }}
+                            providers={['google', 'github']}
+                            theme="dark"
+                        />
                     </div>
+                ) : (
+                    // If user IS logged in, show the main application
+                    <>
+                        <Hero />
+                        <GeneratorInput 
+                            handleGenerate={handleGenerate}
+                            isLoading={isLoading}
+                            error={error}
+                        />
+                        {isLoading && (
+                            <div className="text-center mt-8">
+                                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
+                                <p className="mt-2 text-gray-400">The AI is thinking... this can take a moment.</p>
+                            </div>
+                        )}
+                        <ResultsDisplay generatedContent={generatedContent} />
+                    </>
                 )}
-                <ResultsDisplay generatedContent={generatedContent} />
             </main>
             <Footer />
         </div>
