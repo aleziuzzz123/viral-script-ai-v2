@@ -82,11 +82,17 @@ const Dashboard = ({ session, profile, setProfile }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [generatedContent, setGeneratedContent] = useState(null);
+    const [wizardStep, setWizardStep] = useState(1);
     const [topic, setTopic] = useState('');
+    const [goal, setGoal] = useState('Go Viral / Maximize Reach');
+    const [tone, setTone] = useState('Engaging');
+    const [audience, setAudience] = useState('');
 
     const handleGenerate = useCallback(async () => {
         if (!profile || profile.credits < 1) { setError("You're out of credits!"); return; }
         if (!topic) { setError('Please enter a topic.'); return; }
+        if (wizardStep === 1) { setWizardStep(2); return; }
+
         setIsLoading(true);
         setError('');
         setGeneratedContent(null);
@@ -98,17 +104,18 @@ const Dashboard = ({ session, profile, setProfile }) => {
             const response = await fetch('/.netlify/functions/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic }),
+                body: JSON.stringify({ topic, goal, tone, audience }),
             });
             if (!response.ok) throw new Error('AI failed to generate content.');
             const data = await response.json();
             setGeneratedContent(data);
+            setWizardStep(1); // Reset wizard after generation
         } catch (err) {
             setError(err.message);
         } finally {
             setIsLoading(false);
         }
-    }, [topic, profile, session, setProfile]);
+    }, [topic, goal, tone, audience, profile, session, setProfile, wizardStep]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -116,13 +123,48 @@ const Dashboard = ({ session, profile, setProfile }) => {
                 <div className="lg:col-span-2 space-y-8">
                     <div className="bg-brand-container border border-brand-border rounded-2xl p-8">
                         <h2 className="text-3xl font-bold text-brand-text-primary">Dashboard</h2>
-                        <p className="text-brand-text-secondary mt-2 mb-6">Let's create your next viral hit. Enter a topic below.</p>
-                        <div className="flex flex-col sm:flex-row gap-2">
-                            <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to start a podcast'" className="w-full bg-brand-background border border-brand-border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-brand-accent" />
-                            <button onClick={handleGenerate} disabled={isLoading} className="bg-brand-accent hover:opacity-90 text-black font-bold py-3 px-6 rounded-lg disabled:opacity-50 whitespace-nowrap">
-                                {isLoading ? 'Generating...' : 'Generate Blueprint'}
-                            </button>
-                        </div>
+                        <p className="text-brand-text-secondary mt-2 mb-6">Let's create your next viral hit.</p>
+                        
+                        {wizardStep === 1 && (
+                            <div>
+                                <label className="font-semibold text-lg text-brand-text-primary block mb-3">What's your video topic?</label>
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to start a podcast'" className="w-full bg-brand-background border border-brand-border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-brand-accent" />
+                                    <button onClick={handleGenerate} className="bg-brand-accent hover:opacity-90 text-black font-bold py-3 px-6 rounded-lg whitespace-nowrap">Create Blueprint</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {wizardStep === 2 && (
+                            <div className="space-y-6 text-left">
+                                <div>
+                                    <label className="font-semibold text-brand-text-primary block mb-2">What is your primary goal?</label>
+                                    <select value={goal} onChange={(e) => setGoal(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3">
+                                        <option>Go Viral / Maximize Reach</option>
+                                        <option>Sell a Product / Service</option>
+                                        <option>Educate My Audience</option>
+                                        <option>Tell a Personal Story</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="font-semibold text-brand-text-primary block mb-2">What is the desired tone?</label>
+                                    <select value={tone} onChange={(e) => setTone(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3">
+                                        <option>Engaging</option>
+                                        <option>Funny & Comedic</option>
+                                        <option>Inspirational & Motivational</option>
+                                        <option>Serious & Educational</option>
+                                        <option>Shocking & Controversial</option>
+                                    </select>
+                                </div>
+                                 <div>
+                                    <label className="font-semibold text-brand-text-primary block mb-2">Briefly describe your target audience.</label>
+                                    <input type="text" value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="e.g., 'Beginner entrepreneurs'" className="w-full bg-brand-background border border-brand-border rounded-lg p-3" />
+                                </div>
+                                <button onClick={handleGenerate} disabled={isLoading} className="w-full bg-brand-accent hover:opacity-90 text-black font-bold py-4 rounded-lg text-lg">
+                                    {isLoading ? 'Generating...' : 'Generate My Custom Blueprint'}
+                                </button>
+                            </div>
+                        )}
                         {error && <p className="text-red-400 text-center mt-4">{error}</p>}
                     </div>
                     {generatedContent && <ResultsDisplay content={generatedContent} />}
@@ -158,13 +200,6 @@ const App = () => {
     const [profile, setProfile] = useState(null);
     const [profileLoading, setProfileLoading] = useState(true);
     const [showAuthModal, setShowAuthModal] = useState(false);
-    
-    // --- NEW: Wizard State ---
-    const [wizardStep, setWizardStep] = useState(1);
-    const [topic, setTopic] = useState('');
-    const [goal, setGoal] = useState('Go Viral / Maximize Reach');
-    const [tone, setTone] = useState('Engaging');
-    const [audience, setAudience] = useState('');
 
     useEffect(() => {
         setProfileLoading(true);
@@ -194,20 +229,6 @@ const App = () => {
             fetchProfile();
         }
     }, [session]);
-    
-    const handleStartWizard = () => {
-        if (!topic) { alert("Please enter a topic to start."); return; }
-        setWizardStep(2);
-    }
-
-    const handleGenerateForGuest = () => {
-        if (!topic) { alert("Please enter a topic to start."); return; }
-        if (wizardStep === 1) {
-            setWizardStep(2);
-            return;
-        }
-        setShowAuthModal(true);
-    }
 
     return (
         <div className="bg-brand-background text-brand-text-secondary min-h-screen font-sans">
@@ -242,45 +263,9 @@ const App = () => {
                 ) : (
                     <div className="text-center py-20 px-4">
                         <h1 className="text-5xl md:text-6xl font-extrabold text-brand-text-primary">Stop Guessing. Start Going Viral.</h1>
-                        <p className="text-xl text-brand-text-secondary max-w-3xl mx-auto mt-6 mb-10">Our AI strategist builds a complete video blueprint, so you can focus on creating.</p>
-                        
-                        <div className="max-w-3xl mx-auto bg-brand-container border border-brand-border rounded-2xl p-8">
-                            {wizardStep === 1 && (
-                                <div>
-                                    <label className="font-semibold text-lg text-brand-text-primary block mb-3">What's your video topic?</label>
-                                    <div className="flex flex-col sm:flex-row gap-2">
-                                        <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to start a podcast'" className="w-full bg-brand-background border border-brand-border rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-brand-accent" />
-                                        <button onClick={handleStartWizard} className="bg-brand-accent hover:opacity-90 text-black font-bold py-3 px-6 rounded-lg whitespace-nowrap">Create My Blueprint</button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {wizardStep === 2 && (
-                                <div className="space-y-6 text-left animate-fade-in">
-                                    <div>
-                                        <label className="font-semibold text-brand-text-primary block mb-2">What is your primary goal?</label>
-                                        <select value={goal} onChange={(e) => setGoal(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3">
-                                            <option>Go Viral / Maximize Reach</option>
-                                            <option>Sell a Product / Service</option>
-                                            <option>Educate My Audience</option>
-                                            <option>Tell a Personal Story</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="font-semibold text-brand-text-primary block mb-2">What is the desired tone?</label>
-                                        <select value={tone} onChange={(e) => setTone(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3">
-                                            <option>Engaging</option>
-                                            <option>Funny & Comedic</option>
-                                            <option>Inspirational & Motivational</option>
-                                            <option>Serious & Educational</option>
-                                            <option>Shocking & Controversial</option>
-                                        </select>
-                                    </div>
-                                    <button onClick={handleGenerateForGuest} className="w-full bg-brand-accent hover:opacity-90 text-black font-bold py-4 rounded-lg text-lg">
-                                        Generate My Custom Blueprint
-                                    </button>
-                                </div>
-                            )}
+                        <p className="text-xl text-brand-text-secondary max-w-3xl mx-auto mt-6 mb-10">Generate a complete viral video blueprint—from hooks to hashtags—in seconds.</p>
+                        <div className="max-w-2xl mx-auto">
+                           <button onClick={() => setShowAuthModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-4 px-8 rounded-lg text-lg">Generate Your First Blueprint Free</button>
                         </div>
                     </div>
                 )}
