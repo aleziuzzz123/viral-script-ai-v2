@@ -20,9 +20,7 @@ const App = () => {
         });
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
-            if (session) {
-                setShowAuthModal(false);
-            }
+            if (session) setShowAuthModal(false);
         });
         return () => subscription.unsubscribe();
     }, []);
@@ -30,11 +28,7 @@ const App = () => {
     useEffect(() => {
         if (session?.user) {
             const fetchProfile = async () => {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single();
+                const { data, error } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
                 if (error) console.error('Error fetching profile:', error);
                 else setProfile(data);
             };
@@ -100,47 +94,65 @@ const App = () => {
             <header className="app-header">
                 <div className="header-content">
                     <h1>Viral Script AI</h1>
-                    {session ? (
+                    {session && profile && (
                          <div className="user-info">
-                            <span>Credits: {profile ? profile.credits : '...'}</span>
+                            <span>Credits: {profile.credits}</span>
                             <button onClick={async () => await supabase.auth.signOut()} className="logout-btn">Logout</button>
                         </div>
-                    ) : (
-                        <button onClick={() => setShowAuthModal(true)} className="login-btn">Login / Sign Up</button>
                     )}
                 </div>
             </header>
 
             <main>
-                {/* --- THIS IS THE NEW LOGIC --- */}
                 {session ? (
-                    // LOGGED-IN (DASHBOARD) VIEW
-                    <div className="dashboard-header">
-                        <h2>Welcome Back!</h2>
-                        <p>Let's create your next viral hit. Enter a topic below.</p>
+                    // --- NEW LOGGED-IN (DASHBOARD) VIEW ---
+                    <div className="dashboard-grid">
+                        <div className="dashboard-main">
+                            <div className="dashboard-header">
+                                <h2>Welcome Back!</h2>
+                                <p>Let's create your next viral hit. Enter a topic below.</p>
+                            </div>
+                            <div className="generator-view">
+                                <div className="input-container">
+                                    <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to invest in stocks'" />
+                                    <button onClick={handleGenerate} disabled={isLoading}>
+                                        {isLoading ? 'Analyzing...' : 'Generate Scripts'}
+                                    </button>
+                                </div>
+                                {error && <p className="error-text">{error}</p>}
+                            </div>
+                        </div>
+                        <div className="dashboard-sidebar">
+                            <div className="info-card">
+                                <h4>Credit Balance</h4>
+                                <p className="credit-balance">{profile ? profile.credits : '...'}</p>
+                                <button className="buy-credits-btn">Buy More Credits</button>
+                            </div>
+                            <div className="info-card">
+                                <h4>Usage</h4>
+                                <p className="usage-stat">You've generated <strong>{5 - (profile ? profile.credits : 5)}</strong> scripts so far.</p>
+                            </div>
+                        </div>
                     </div>
                 ) : (
-                    // LOGGED-OUT (LANDING PAGE) VIEW
+                    // --- LOGGED-OUT (LANDING PAGE) VIEW ---
                     <div className="hero-section">
                         <div className="hero-content">
                             <h1 className="hero-headline">Stop Guessing. Start Going Viral.</h1>
-                            <p className="hero-subheadline">
-                                Generate proven, high-impact video hooks and scripts in seconds.
-                                Transform your ideas into content that captivates and converts.
-                            </p>
+                            <p className="hero-subheadline">Generate proven, high-impact video hooks and scripts for your videos.</p>
+                            <div className="input-container">
+                                <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to invest in stocks'" />
+                                <button onClick={handleGenerate} disabled={isLoading}>
+                                    {isLoading ? 'Analyzing...' : 'Generate Your First Script'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
                 
-                <div className="generator-view">
-                    <div className="input-container">
-                        <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to invest in stocks'" />
-                        <button onClick={handleGenerate} disabled={isLoading}>
-                            {isLoading ? 'Analyzing...' : (session ? 'Generate Scripts' : 'Generate Your First Script')}
-                        </button>
-                    </div>
-                    {error && <p className="error-text">{error}</p>}
-                    {generatedContent && (
+                {/* --- Results are shown outside the main/sidebar grid for focus --- */}
+                {generatedContent && (
+                    <div className="results-display-container">
                         <div className="results-display">
                             {generatedContent.hooks.map((hook, index) => (
                                 <div key={index} className="script-card">
@@ -149,8 +161,8 @@ const App = () => {
                                 </div>
                             ))}
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </main>
             <footer className="footer">
                 <p>&copy; {new Date().getFullYear()} Viral Script AI. All Rights Reserved.</p>
@@ -160,4 +172,3 @@ const App = () => {
 };
 
 export default App;
- 
