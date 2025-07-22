@@ -14,14 +14,12 @@ const App = () => {
     const [topic, setTopic] = useState('');
     const [showAuthModal, setShowAuthModal] = useState(false);
 
-    // Effect to get session and listen for auth changes
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
         });
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
-            // If user logs in while modal is open, close it
             if (session) {
                 setShowAuthModal(false);
             }
@@ -29,7 +27,6 @@ const App = () => {
         return () => subscription.unsubscribe();
     }, []);
 
-    // Effect to get the user's profile (with credits)
     useEffect(() => {
         if (session?.user) {
             const fetchProfile = async () => {
@@ -38,68 +35,49 @@ const App = () => {
                     .select('*')
                     .eq('id', session.user.id)
                     .single();
-                if (error) {
-                    console.error('Error fetching profile:', error);
-                } else {
-                    setProfile(data);
-                }
+                if (error) console.error('Error fetching profile:', error);
+                else setProfile(data);
             };
             fetchProfile();
         }
     }, [session]);
 
     const handleGenerate = useCallback(async () => {
-        // Step 1: Check for login. If not logged in, show the modal.
         if (!session) {
             setShowAuthModal(true);
             return;
         }
-
-        // Step 2: Check for credits (if user is logged in).
         if (profile && profile.credits < 1) {
-            setError("You're out of credits! Click 'Buy Credits' to continue.");
+            setError("You're out of credits! Please purchase more to continue.");
             return;
         }
-
         if (!topic) {
             setError('Please enter a video topic.');
             return;
         }
-
         setIsLoading(true);
         setError('');
         setGeneratedContent(null);
-
         try {
-            // Step 3 (for logged-in users): Deduct credit and call the AI
             if (profile) {
-                const { error: updateError } = await supabase
-                    .from('profiles')
-                    .update({ credits: profile.credits - 1 })
-                    .eq('id', session.user.id);
+                const { error: updateError } = await supabase.from('profiles').update({ credits: profile.credits - 1 }).eq('id', session.user.id);
                 if (updateError) throw updateError;
-                // Update local profile state immediately for better UX
                 setProfile(prev => ({ ...prev, credits: prev.credits - 1 }));
             }
-            
             const response = await fetch('/.netlify/functions/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ topic }),
             });
-
             if (!response.ok) {
-                // If AI call fails, refund the credit
                 if (profile) {
                    await supabase.from('profiles').update({ credits: profile.credits }).eq('id', session.user.id);
                    setProfile(prev => ({ ...prev, credits: prev.credits + 1 }));
                 }
                 throw new Error('AI failed to generate content. Please try again.');
             }
-            
             const data = await response.json();
             setGeneratedContent(data);
-
         } catch (err) {
             setError(err.message);
         } finally {
@@ -109,24 +87,16 @@ const App = () => {
 
     return (
         <div className="app-container">
-            {/* --- The Login Modal (hidden by default) --- */}
             {showAuthModal && (
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <button onClick={() => setShowAuthModal(false)} className="close-button">&times;</button>
                         <h3 className="auth-title">Your Scripts Are Ready!</h3>
                         <p className="auth-subtitle">Create a free account to view them and get 5 bonus credits.</p>
-                        <Auth
-                            supabaseClient={supabase}
-                            appearance={{ theme: ThemeSupa }}
-                            providers={['google']} // <-- THE ONLY CHANGE IS HERE
-                            theme="dark"
-                        />
+                        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google']} theme="dark" />
                     </div>
                 </div>
             )}
-
-            {/* --- Main App UI --- */}
             <header className="app-header">
                 <div className="header-content">
                     <h1>Viral Script AI</h1>
@@ -142,26 +112,31 @@ const App = () => {
             </header>
 
             <main>
-                <div className="hero-section">
-                    <div className="hero-content">
-                        <h1 className="hero-headline">Stop Guessing. Start Going Viral.</h1>
-                        <p className="hero-subheadline">
-                            Generate proven, high-impact video hooks and scripts in seconds.
-                            Transform your ideas into content that captivates and converts.
-                        </p>
+                {/* --- THIS IS THE NEW LOGIC --- */}
+                {session ? (
+                    // LOGGED-IN (DASHBOARD) VIEW
+                    <div className="dashboard-header">
+                        <h2>Welcome Back!</h2>
+                        <p>Let's create your next viral hit. Enter a topic below.</p>
                     </div>
-                </div>
-
+                ) : (
+                    // LOGGED-OUT (LANDING PAGE) VIEW
+                    <div className="hero-section">
+                        <div className="hero-content">
+                            <h1 className="hero-headline">Stop Guessing. Start Going Viral.</h1>
+                            <p className="hero-subheadline">
+                                Generate proven, high-impact video hooks and scripts in seconds.
+                                Transform your ideas into content that captivates and converts.
+                            </p>
+                        </div>
+                    </div>
+                )}
+                
                 <div className="generator-view">
                     <div className="input-container">
-                        <input
-                            type="text"
-                            value={topic}
-                            onChange={(e) => setTopic(e.target.value)}
-                            placeholder="e.g., 'How to invest in stocks'"
-                        />
+                        <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to invest in stocks'" />
                         <button onClick={handleGenerate} disabled={isLoading}>
-                            {isLoading ? 'Analyzing...' : 'Generate Your First Script'}
+                            {isLoading ? 'Analyzing...' : (session ? 'Generate Scripts' : 'Generate Your First Script')}
                         </button>
                     </div>
                     {error && <p className="error-text">{error}</p>}
