@@ -7,7 +7,6 @@ const openai = new OpenAI({
 });
 
 // Initialize Supabase Admin Client
-// We use the SERVICE_ROLE_KEY for backend functions to bypass RLS policies
 const supabase = createClient(
   process.env.REACT_APP_SUPABASE_URL, 
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -18,6 +17,7 @@ exports.handler = async function (event, context) {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
+  // Now accepts the new userId from the front-end
   const { topic, goal, tone, audience, userId } = JSON.parse(event.body);
 
   if (!topic || !userId) {
@@ -25,8 +25,27 @@ exports.handler = async function (event, context) {
   }
 
   const prompt = `
-    You are "Blueprint AI", a world-class viral video strategist...
-    // The rest of your master prompt remains the same
+    You are "Blueprint AI", a world-class viral video strategist. Your goal is to create a complete "Viral Video Blueprint" for the user.
+    The user's inputs are:
+    - Video Topic: "${topic}"
+    - Primary Goal: "${goal || 'Go Viral'}"
+    - Desired Tone: "${tone || 'Engaging'}"
+    - Target Audience: "${audience || 'A general audience'}"
+
+    Generate a comprehensive blueprint as a single, valid JSON object with three top-level keys: "hooks", "script", and "production_plan".
+
+    1.  hooks: An array of exactly 5 hooks. Each hook must be an object with FOUR keys:
+        - "category": The strategic category of the hook. Must be one of: "Curiosity Gap", "Controversy", "Urgency (FOMO)", or "Direct Value".
+        - "text": The hook text (string, max 15 words).
+        - "score": A "Viral Score" (integer, 70-100) predicting its viral potential.
+        - "analysis": A brief, one-sentence explanation of why the hook works based on its category (string).
+
+    2.  script: A full 30-second video script (string). It MUST include "Delivery Coach" notes in parentheses. The script should be formatted with newlines (\\n) for readability.
+
+    3.  production_plan: An object with three keys:
+        - "visuals": An array of 3-4 specific, shot-by-shot visual ideas (array of strings).
+        - "audio": A suggestion for the type of trending audio to use (string).
+        - "hashtags": An array of 5-7 strategic hashtags (array of strings).
   `;
 
   try {
@@ -44,7 +63,6 @@ exports.handler = async function (event, context) {
       topic: topic,
       blueprint: blueprint,
     });
-    // ---------------------------------------------
 
     return {
       statusCode: 200,
