@@ -14,6 +14,17 @@ const HashtagIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="
 // --- Results Component ---
 const ResultsDisplay = ({ content }) => {
     const [activeTab, setActiveTab] = useState('hooks');
+
+    const getCategoryClass = (category) => {
+        switch (category) {
+            case 'Curiosity Gap': return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
+            case 'Controversy': return 'bg-red-500/10 text-red-400 border-red-500/30';
+            case 'Urgency (FOMO)': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30';
+            case 'Direct Value': return 'bg-green-500/10 text-green-400 border-green-500/30';
+            default: return 'bg-gray-500/10 text-gray-400 border-gray-500/30';
+        }
+    };
+
     return (
         <div className="mt-8 bg-brand-container border border-brand-border rounded-2xl">
             <div className="border-b border-brand-border flex">
@@ -26,14 +37,15 @@ const ResultsDisplay = ({ content }) => {
                     <div className="space-y-4">
                         {content.hooks.map((hook, index) => (
                             <div key={index} className="bg-brand-background border border-brand-border rounded-lg p-4">
-                                <div className="flex justify-between items-start">
-                                    <p className="text-brand-text-primary pr-4">{index + 1}. {hook.text}</p>
+                                <div className="flex justify-between items-start mb-2">
+                                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getCategoryClass(hook.category)}`}>{hook.category}</span>
                                     <div className="text-center flex-shrink-0 ml-4">
                                         <p className="font-bold text-2xl text-brand-accent">{hook.score}</p>
                                         <p className="text-xs text-brand-text-secondary">Viral Score</p>
                                     </div>
                                 </div>
-                                <p className="text-sm text-brand-text-secondary mt-2 pl-6 opacity-75">{hook.analysis}</p>
+                                <p className="text-brand-text-primary pr-4">{hook.text}</p>
+                                <p className="text-sm text-brand-text-secondary mt-2 italic opacity-75">"{hook.analysis}"</p>
                             </div>
                         ))}
                     </div>
@@ -200,6 +212,10 @@ const App = () => {
     const [profile, setProfile] = useState(null);
     const [profileLoading, setProfileLoading] = useState(true);
     const [showAuthModal, setShowAuthModal] = useState(false);
+    
+    // --- NEW: Wizard State for Landing Page ---
+    const [wizardStep, setWizardStep] = useState(1);
+    const [topic, setTopic] = useState('');
 
     useEffect(() => {
         setProfileLoading(true);
@@ -229,6 +245,11 @@ const App = () => {
             fetchProfile();
         }
     }, [session]);
+
+    const handleGuestGenerate = () => {
+        if (!topic) { alert("Please enter a topic to start."); return; }
+        setShowAuthModal(true);
+    }
 
     return (
         <div className="bg-brand-background text-brand-text-secondary min-h-screen font-sans">
@@ -265,7 +286,10 @@ const App = () => {
                         <h1 className="text-5xl md:text-6xl font-extrabold text-brand-text-primary">Stop Guessing. Start Going Viral.</h1>
                         <p className="text-xl text-brand-text-secondary max-w-3xl mx-auto mt-6 mb-10">Generate a complete viral video blueprint—from hooks to hashtags—in seconds.</p>
                         <div className="max-w-2xl mx-auto">
-                           <button onClick={() => setShowAuthModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-4 px-8 rounded-lg text-lg">Generate Your First Blueprint Free</button>
+                            <div className="flex flex-col sm:flex-row gap-2">
+                                <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Enter a topic to get started..." className="w-full bg-brand-container border border-brand-border rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-brand-accent" />
+                                <button onClick={handleGuestGenerate} className="bg-brand-accent hover:opacity-90 text-black font-bold py-3 px-6 rounded-lg whitespace-nowrap">Generate Free Blueprint</button>
+                            </div>
                         </div>
                     </div>
                 )}
