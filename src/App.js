@@ -63,7 +63,7 @@ const ScheduleModal = ({ blueprint, session, setShow, onScheduled }) => {
     return ( <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4"><div className="bg-brand-container border border-brand-border rounded-2xl p-8 max-w-md w-full relative"><button onClick={() => setShow(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button><h3 className="text-2xl font-bold text-center text-brand-text-primary mb-4">Schedule Blueprint</h3><p className="text-brand-text-secondary text-center mb-6">Choose a date to add this to your content calendar.</p><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3" /><button onClick={handleSave} disabled={saving} className="w-full mt-4 bg-brand-accent hover:opacity-90 text-black font-bold py-3 rounded-lg">{saving ? 'Saving...' : 'Add to Calendar'}</button></div></div>);
 };
 
-// --- Results Component ---
+// --- Results Component (FIXED) ---
 const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
     const [activeTab, setActiveTab] = useState('hooks');
     const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -79,10 +79,14 @@ const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
         setAudioLoading(true);
         setAudioSrc(null);
         try {
+            // --- THE FIX IS HERE ---
+            // We clean the script to remove parenthetical notes before sending it to the API.
+            const cleanText = content.script.replace(/\s?\(.*\)\s?/g, ' ');
+
             const response = await fetch('/.netlify/functions/generate-audio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: content.script, voiceId: voiceProfile.voice_id }),
+                body: JSON.stringify({ text: cleanText, voiceId: voiceProfile.voice_id }),
             });
             if (!response.ok) throw new Error("Failed to generate audio.");
             const { audioData } = await response.json();
@@ -172,7 +176,7 @@ const CalendarView = ({ session, voiceProfile }) => {
     );
 };
 
-// --- Account View Component (UPDATED with In-App Recorder + File Upload) ---
+// --- Account View Component ---
 const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
     const [uploading, setUploading] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
@@ -186,13 +190,20 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
     const handleStartRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorderRef.current = new MediaRecorder(stream);
+            const options = { mimeType: 'audio/webm; codecs=opus' };
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                 console.log(`${options.mimeType} is not supported, trying default.`);
+                 mediaRecorderRef.current = new MediaRecorder(stream);
+            } else {
+                 mediaRecorderRef.current = new MediaRecorder(stream, options);
+            }
+            
             audioChunksRef.current = [];
             mediaRecorderRef.current.ondataavailable = (event) => {
                 audioChunksRef.current.push(event.data);
             };
             mediaRecorderRef.current.onstop = () => {
-                const blob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+                const blob = new Blob(audioChunksRef.current, { type: options.mimeType });
                 const url = URL.createObjectURL(blob);
                 setAudioBlob(blob);
                 setAudioUrl(url);
@@ -224,7 +235,7 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
 
     const handleCreateVoice = async () => {
         const audioData = audioBlob || file;
-        const audioName = audioBlob ? 'voice_sample.wav' : file.name;
+        const audioName = audioBlob ? 'voice_sample.webm' : file.name;
 
         if (!audioData) {
             alert("Please record or upload an audio sample first.");
@@ -243,7 +254,6 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
 
             if (!response.ok) {
                 const errText = await response.text();
-                // Check if the error is JSON or plain text
                 try {
                     const errJson = JSON.parse(errText);
                     throw new Error(errJson.error || "Failed to create voice profile.");
