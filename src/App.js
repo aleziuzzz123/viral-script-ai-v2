@@ -11,27 +11,9 @@ const VisualsIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="
 const AudioIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="currentColor"/></svg>;
 const HashtagIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M10.59 4.59C10.21 4.21 9.7 4 9.17 4H4c-1.1 0-2 .9-2 2v5.17c0 .53.21 1.04.59 1.41l8.83 8.83c.78.78 2.05.78 2.83 0l5.17-5.17c.78-.78.78-2.05 0-2.83l-8.83-8.83zM6.5 8C5.67 8 5 7.33 5 6.5S5.67 5 6.5 5 8 5.67 8 6.5 7.33 8 6.5 8z" fill="currentColor"/></svg>;
 
-// --- Results Component with Copy Functionality ---
+// --- Results Component ---
 const ResultsDisplay = ({ content }) => {
     const [activeTab, setActiveTab] = useState('hooks');
-    const [copied, setCopied] = useState('');
-
-    const copyToClipboard = (text, type) => {
-        navigator.clipboard.writeText(text);
-        setCopied(type);
-        setTimeout(() => setCopied(''), 2000); // Reset after 2 seconds
-    };
-
-    const getCategoryClass = (category) => {
-        switch (category) {
-            case 'Curiosity Gap': return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
-            case 'Controversy': return 'bg-red-500/10 text-red-400 border-red-500/30';
-            case 'Urgency (FOMO)': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30';
-            case 'Direct Value': return 'bg-green-500/10 text-green-400 border-green-500/30';
-            default: return 'bg-gray-500/10 text-gray-400 border-gray-500/30';
-        }
-    };
-
     return (
         <div className="mt-8 bg-brand-container border border-brand-border rounded-2xl">
             <div className="border-b border-brand-border flex">
@@ -43,29 +25,22 @@ const ResultsDisplay = ({ content }) => {
                 {activeTab === 'hooks' && (
                     <div className="space-y-4">
                         {content.hooks.map((hook, index) => (
-                            <div key={index} className="bg-brand-background border border-brand-border rounded-lg p-4 group relative">
-                                <div className="flex justify-between items-start mb-2">
-                                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getCategoryClass(hook.category)}`}>{hook.category}</span>
+                            <div key={index} className="bg-brand-background border border-brand-border rounded-lg p-4">
+                                <div className="flex justify-between items-start">
+                                    <p className="text-brand-text-primary pr-4">{index + 1}. {hook.text}</p>
                                     <div className="text-center flex-shrink-0 ml-4">
                                         <p className="font-bold text-2xl text-brand-accent">{hook.score}</p>
                                         <p className="text-xs text-brand-text-secondary">Viral Score</p>
                                     </div>
                                 </div>
-                                <p className="text-brand-text-primary pr-4">{hook.text}</p>
-                                <p className="text-sm text-brand-text-secondary mt-2 italic opacity-75">"{hook.analysis}"</p>
-                                <button onClick={() => copyToClipboard(hook.text, `hook-${index}`)} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                                    {copied === `hook-${index}` ? 'Copied!' : 'Copy'}
-                                </button>
+                                <p className="text-sm text-brand-text-secondary mt-2 pl-6 opacity-75">{hook.analysis}</p>
                             </div>
                         ))}
                     </div>
                 )}
                 {activeTab === 'script' && (
-                    <div className="bg-brand-background border border-brand-border rounded-lg p-6 whitespace-pre-line text-brand-text-secondary leading-relaxed group relative">
+                    <div className="bg-brand-background border border-brand-border rounded-lg p-6 whitespace-pre-line text-brand-text-secondary leading-relaxed">
                         {content.script}
-                        <button onClick={() => copyToClipboard(content.script, 'script')} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                            {copied === 'script' ? 'Copied!' : 'Copy Script'}
-                        </button>
                     </div>
                 )}
                 {activeTab === 'plan' && (
@@ -90,11 +65,8 @@ const ResultsDisplay = ({ content }) => {
                             <HashtagIcon />
                             <div>
                                 <h4 className="font-semibold text-brand-text-primary mb-2">Hashtag Strategy</h4>
-                                <div className="flex flex-wrap gap-2 group relative">
+                                <div className="flex flex-wrap gap-2">
                                     {content.production_plan.hashtags.map((h, i) => <span key={i} className="bg-brand-background border border-brand-border text-brand-text-secondary text-sm font-medium px-3 py-1 rounded-full">{h}</span>)}
-                                    <button onClick={() => copyToClipboard(content.production_plan.hashtags.join(' '), 'hashtags')} className="absolute -top-2 -right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                                        {copied === 'hashtags' ? 'Copied!' : 'Copy All'}
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -228,10 +200,10 @@ const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
 
     // IMPORTANT: Replace these with your actual Price IDs from your Stripe dashboard
     const creditPacks = [
-        { name: 'Trial Pack', credits: 10, price: '$7', priceId: 'YOUR_TRIAL_PACK_PRICE_ID' },
-        { name: 'Creator Pack', credits: 50, price: '$27', priceId: 'YOUR_CREATOR_PACK_PRICE_ID' },
-        { name: 'Pro Pack', credits: '100 + 10 Bonus', price: '$47', priceId: 'YOUR_PRO_PACK_PRICE_ID', popular: true },
-        { name: 'Agency Pack', credits: '250 + 50 Bonus', price: '$97', priceId: 'YOUR_AGENCY_PACK_PRICE_ID' },
+        { name: 'Trial Pack', credits: 10, price: '$7', priceId: 'price_1RnqtMKucnJQ8ZaNjFzxoW85' },
+        { name: 'Creator Pack', credits: 50, price: '$27', priceId: 'price_1RnqtrKucnJQ8ZaNI5apjA4u' },
+        { name: 'Pro Pack', credits: '100 + 10 Bonus', price: '$47', priceId: 'price_1RnquFKucnJQ8ZaNR9Z6skUk', popular: true },
+        { name: 'Agency Pack', credits: '250 + 50 Bonus', price: '$97', priceId: 'price_1RnqucKucnJQ8ZaNt9SNptof' },
     ];
 
     const handlePurchase = async (priceId) => {
@@ -360,5 +332,3 @@ const App = () => {
 };
 
 export default App;
-
-           
