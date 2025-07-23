@@ -11,20 +11,9 @@ const VisualsIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="
 const AudioIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="currentColor"/></svg>;
 const HashtagIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M10.59 4.59C10.21 4.21 9.7 4 9.17 4H4c-1.1 0-2 .9-2 2v5.17c0 .53.21 1.04.59 1.41l8.83 8.83c.78.78 2.05.78 2.83 0l5.17-5.17c.78-.78.78-2.05 0-2.83l-8.83-8.83zM6.5 8C5.67 8 5 7.33 5 6.5S5.67 5 6.5 5 8 5.67 8 6.5 7.33 8 6.5 8z" fill="currentColor"/></svg>;
 
-// --- Results Component with Upgraded UI ---
+// --- Results Component ---
 const ResultsDisplay = ({ content }) => {
     const [activeTab, setActiveTab] = useState('hooks');
-
-    const getCategoryClass = (category) => {
-        switch (category) {
-            case 'Curiosity Gap': return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
-            case 'Controversy': return 'bg-red-500/10 text-red-400 border-red-500/30';
-            case 'Urgency (FOMO)': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30';
-            case 'Direct Value': return 'bg-green-500/10 text-green-400 border-green-500/30';
-            default: return 'bg-gray-500/10 text-gray-400 border-gray-500/30';
-        }
-    };
-
     return (
         <div className="mt-8 bg-brand-container border border-brand-border rounded-2xl">
             <div className="border-b border-brand-border flex">
@@ -37,15 +26,14 @@ const ResultsDisplay = ({ content }) => {
                     <div className="space-y-4">
                         {content.hooks.map((hook, index) => (
                             <div key={index} className="bg-brand-background border border-brand-border rounded-lg p-4">
-                                <div className="flex justify-between items-start mb-2">
-                                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getCategoryClass(hook.category)}`}>{hook.category}</span>
+                                <div className="flex justify-between items-start">
+                                    <p className="text-brand-text-primary pr-4">{index + 1}. {hook.text}</p>
                                     <div className="text-center flex-shrink-0 ml-4">
                                         <p className="font-bold text-2xl text-brand-accent">{hook.score}</p>
                                         <p className="text-xs text-brand-text-secondary">Viral Score</p>
                                     </div>
                                 </div>
-                                <p className="text-brand-text-primary pr-4">{hook.text}</p>
-                                <p className="text-sm text-brand-text-secondary mt-2 opacity-75 italic">"{hook.analysis}"</p>
+                                <p className="text-sm text-brand-text-secondary mt-2 pl-6 opacity-75">{hook.analysis}</p>
                             </div>
                         ))}
                     </div>
@@ -249,4 +237,42 @@ const App = () => {
                     <div className="bg-brand-container border border-brand-border rounded-2xl p-8 max-w-md w-full relative">
                         <button onClick={() => setShowAuthModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button>
                         <h3 className="text-2xl font-bold text-center text-brand-text-primary mb-2">Your Blueprint is Ready!</h3>
-                        <p className="text-brand-text-secondary text-center mb
+                        <p className="text-brand-text-secondary text-center mb-6">Create a free account to view it.</p>
+                        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google']} theme="dark" />
+                    </div>
+                </div>
+            )}
+
+            <header className="border-b border-brand-border">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-brand-text-primary">Viral Script AI</h1>
+                    {session ? (
+                        <div className="flex items-center gap-4">
+                            <span className="text-sm text-brand-text-secondary">Credits: <span className="font-bold text-brand-text-primary">{profileLoading ? '...' : (profile ? profile.credits : 0)}</span></span>
+                            <button onClick={async () => await supabase.auth.signOut()} className="bg-brand-container hover:bg-gray-700 text-brand-text-primary font-semibold py-2 px-4 rounded-lg text-sm border border-brand-border">Logout</button>
+                        </div>
+                    ) : (
+                        <button onClick={() => setShowAuthModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-2 px-4 rounded-lg">Login / Sign Up</button>
+                    )}
+                </div>
+            </header>
+
+            <main>
+                {session ? (
+                    <Dashboard session={session} profile={profile} setProfile={setProfile} />
+                ) : (
+                    <div className="text-center py-20 px-4">
+                        <h1 className="text-5xl md:text-6xl font-extrabold text-brand-text-primary">Stop Guessing. Start Going Viral.</h1>
+                        <p className="text-xl text-brand-text-secondary max-w-3xl mx-auto mt-6 mb-10">Generate a complete viral video blueprint—from hooks to hashtags—in seconds.</p>
+                        <div className="max-w-2xl mx-auto">
+                           <button onClick={() => setShowAuthModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-4 px-8 rounded-lg text-lg">Generate Your First Blueprint Free</button>
+                        </div>
+                    </div>
+                )}
+            </main>
+        </div>
+    );
+};
+
+export default App;
+         
