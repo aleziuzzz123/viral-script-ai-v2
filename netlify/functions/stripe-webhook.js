@@ -5,10 +5,10 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
 
 // This maps your Stripe Price IDs to the number of credits
 const creditsMap = {
-  'price_1P...': 10,  // Replace with your actual Price ID for the Trial Pack
-  'price_1P...': 50,  // Replace with your actual Price ID for the Creator Pack
-  'price_1P...': 110, // Replace with your actual Price ID for the Pro Pack
-  'price_1P...': 300, // Replace with your actual Price ID for the Agency Pack
+  'price_1RnqtMKucnJQ8ZaNjFzxoW85': 10,  // Trial Pack
+  'price_1RnqtrKucnJQ8ZaNI5apjA4u': 50,  // Creator Pack
+  'price_1RnquFKucnJQ8ZaNR9Z6skUk': 110, // Pro Pack (100 + 10 bonus)
+  'price_1RnqucKucnJQ8ZaNt9SNptof': 300, // Agency Pack (250 + 50 bonus)
 };
 
 exports.handler = async ({ body, headers }) => {
