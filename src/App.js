@@ -14,14 +14,30 @@ import './App.css';
 const locales = { 'en-US': require('date-fns/locale/en-US') };
 const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
 
-// --- SVG Icons (Your Original Code) ---
+// --- SVG Icons ---
 const CreditIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12h2v4h-2v-4zm0 6h2v2h-2v-2z" fill="currentColor"/></svg>;
 const HistoryIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 0 1 7-7 7 7 0 0 1 7 7 7 7 0 0 1-7 7v2a9 9 0 0 0 9-9 9 9 0 0 0-9-9z" fill="currentColor"/><path d="M12 8v5l4.25 2.52.75-1.23-3.5-2.07V8z" fill="currentColor"/></svg>;
 const VisualsIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="currentColor"/></svg>;
 const AudioIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="currentColor"/></svg>;
 const HashtagIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M10.59 4.59C10.21 4.21 9.7 4 9.17 4H4c-1.1 0-2 .9-2 2v5.17c0 .53.21 1.04.59 1.41l8.83 8.83c.78.78 2.05.78 2.83 0l5.17-5.17c.78-.78.78-2.05 0-2.83l-8.83-8.83zM6.5 8C5.67 8 5 7.33 5 6.5S5.67 5 6.5 5 8 5.67 8 6.5 7.33 8 6.5 8z" fill="currentColor"/></svg>;
 
-// --- Schedule Modal (Your Original Code - Unchanged) ---
+// --- Blueprint Detail Modal (NEW) ---
+const BlueprintDetailModal = ({ blueprint, closeModal }) => {
+    if (!blueprint) return null;
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-brand-container border border-brand-border rounded-2xl p-8 max-w-3xl w-full relative">
+                <button onClick={closeModal} className="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button>
+                <h3 className="text-2xl font-bold text-center text-brand-text-primary mb-4">Blueprint Details</h3>
+                <div className="max-h-[70vh] overflow-y-auto">
+                   <ResultsDisplay content={blueprint} />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Schedule Modal ---
 const ScheduleModal = ({ blueprint, session, setShow, onScheduled }) => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [saving, setSaving] = useState(false);
@@ -59,7 +75,7 @@ const ScheduleModal = ({ blueprint, session, setShow, onScheduled }) => {
     );
 };
 
-// --- Results Component (Your Original Code - Unchanged) ---
+// --- Results Component ---
 const ResultsDisplay = ({ content, session, onScheduled }) => {
     const [activeTab, setActiveTab] = useState('hooks');
     const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -91,7 +107,7 @@ const ResultsDisplay = ({ content, session, onScheduled }) => {
                         <button onClick={() => setActiveTab('script')} className={`px-4 py-3 font-semibold ${activeTab === 'script' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Full Script</button>
                         <button onClick={() => setActiveTab('plan')} className={`px-4 py-3 font-semibold ${activeTab === 'plan' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Production Plan</button>
                     </div>
-                    <button onClick={() => setShowScheduleModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-2 px-4 rounded-lg text-sm">Schedule</button>
+                    {onScheduled && <button onClick={() => setShowScheduleModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-2 px-4 rounded-lg text-sm">Schedule</button>}
                 </div>
                 <div className="p-6">
                     {activeTab === 'hooks' && (
@@ -160,16 +176,16 @@ const ResultsDisplay = ({ content, session, onScheduled }) => {
     );
 };
 
-// --- Calendar View Component (FIXED) ---
+// --- Calendar View Component (UPDATED) ---
 const CalendarView = ({ session }) => {
     const [events, setEvents] = useState([]);
+    const [selectedEvent, setSelectedEvent] = useState(null);
 
     const fetchEvents = useCallback(async () => {
         if (!session?.user) return;
-        // --- FIX #1: Fetching from 'generated_content' instead of 'scheduled_posts' ---
         const { data, error } = await supabase
             .from('generated_content')
-            .select('id, topic, created_at')
+            .select('id, topic, created_at, blueprint')
             .eq('user_id', session.user.id);
 
         if (error) {
@@ -177,11 +193,11 @@ const CalendarView = ({ session }) => {
         } else {
             const formattedEvents = data.map(post => ({
                 id: post.id,
-                // --- FIX #2: Using 'topic' and 'created_at' from the correct table ---
                 title: post.topic,
                 start: new Date(post.created_at),
                 end: new Date(post.created_at),
                 allDay: true,
+                blueprint: post.blueprint
             }));
             setEvents(formattedEvents);
         }
@@ -191,18 +207,26 @@ const CalendarView = ({ session }) => {
         fetchEvents();
     }, [fetchEvents]);
 
+    const handleSelectEvent = (event) => {
+        setSelectedEvent(event.blueprint);
+    };
+
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h2 className="text-3xl font-bold text-brand-text-primary mb-6">Content Calendar</h2>
-            <div className="bg-brand-container border border-brand-border rounded-2xl p-1 md:p-6 h-[70vh] text-brand-text-primary">
-                <Calendar
-                    localizer={localizer}
-                    events={events}
-                    startAccessor="start"
-                    endAccessor="end"
-                />
+        <>
+            {selectedEvent && <BlueprintDetailModal blueprint={selectedEvent} closeModal={() => setSelectedEvent(null)} />}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <h2 className="text-3xl font-bold text-brand-text-primary mb-6">Content Calendar</h2>
+                <div className="bg-brand-container border border-brand-border rounded-2xl p-1 md:p-6 h-[70vh] text-brand-text-primary">
+                    <Calendar
+                        localizer={localizer}
+                        events={events}
+                        startAccessor="start"
+                        endAccessor="end"
+                        onSelectEvent={handleSelectEvent}
+                    />
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
@@ -224,7 +248,6 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal }) => 
     const fetchHistory = useCallback(async () => {
         if (!session?.user) return;
         setHistoryLoading(true);
-        // --- FIX #3: Fetching history from 'generated_content' instead of 'generations' ---
         const { data } = await supabase.from('generated_content').select('id, created_at, topic').eq('user_id', session.user.id).order('created_at', { ascending: false }).limit(5);
         setGenerationHistory(data || []);
         setHistoryLoading(false);
@@ -232,7 +255,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal }) => 
 
     useEffect(() => {
         fetchHistory();
-    }, [session, fetchHistory]); // Removed generatedContent dependency
+    }, [session, fetchHistory]);
 
     const handleGenerate = useCallback(async () => {
         if (!profile || profile.credits < 1) { setShowBuyCreditsModal(true); return; }
@@ -255,18 +278,15 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal }) => 
             if (!response.ok) throw new Error('AI failed to generate content.');
             const data = await response.json();
             setGeneratedContent(data);
-
-            // --- FIX #4: THE MOST IMPORTANT FIX ---
-            // This block was missing. It automatically saves the generated script to the database for the calendar.
+            
             const { error: saveError } = await supabase.from('generated_content').insert({
                 user_id: session.user.id,
                 topic: topic,
                 blueprint: data
             });
             if (saveError) throw saveError;
-            // --- END OF FIX ---
             
-            fetchHistory(); // Refresh the history panel after a successful save
+            fetchHistory();
             setWizardStep(1);
         } catch (err) {
             setError(err.message);
@@ -372,7 +392,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal }) => 
     );
 };
 
-// --- Buy Credits Modal (Your Original Code - Unchanged) ---
+// --- Buy Credits Modal ---
 const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
     const [loading, setLoading] = useState(false);
     const creditPacks = [
@@ -425,7 +445,7 @@ const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
 };
 
 
-// --- Main App Component (Your Original Code - Unchanged) ---
+// --- Main App Component ---
 const App = () => {
     const [session, setSession] = useState(null);
     const [profile, setProfile] = useState(null);
