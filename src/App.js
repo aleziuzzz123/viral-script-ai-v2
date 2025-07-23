@@ -20,9 +20,11 @@ const HistoryIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="
 const VisualsIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="currentColor"/></svg>;
 const AudioIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="currentColor"/></svg>;
 const HashtagIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M10.59 4.59C10.21 4.21 9.7 4 9.17 4H4c-1.1 0-2 .9-2 2v5.17c0 .53.21 1.04.59 1.41l8.83 8.83c.78.78 2.05.78 2.83 0l5.17-5.17c.78-.78.78-2.05 0-2.83l-8.83-8.83zM6.5 8C5.67 8 5 7.33 5 6.5S5.67 5 6.5 5 8 5.67 8 6.5 7.33 8 6.5 8z" fill="currentColor"/></svg>;
+const PlayIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>;
+const LoadingSpinner = () => <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>;
 
-// --- Blueprint Detail Modal (NEW) ---
-const BlueprintDetailModal = ({ blueprint, closeModal }) => {
+// --- Blueprint Detail Modal ---
+const BlueprintDetailModal = ({ blueprint, closeModal, session, voiceProfile }) => {
     if (!blueprint) return null;
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -30,7 +32,7 @@ const BlueprintDetailModal = ({ blueprint, closeModal }) => {
                 <button onClick={closeModal} className="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button>
                 <h3 className="text-2xl font-bold text-center text-brand-text-primary mb-4">Blueprint Details</h3>
                 <div className="max-h-[70vh] overflow-y-auto">
-                   <ResultsDisplay content={blueprint} />
+                   <ResultsDisplay content={blueprint} session={session} voiceProfile={voiceProfile} />
                 </div>
             </div>
         </div>
@@ -76,10 +78,37 @@ const ScheduleModal = ({ blueprint, session, setShow, onScheduled }) => {
 };
 
 // --- Results Component ---
-const ResultsDisplay = ({ content, session, onScheduled }) => {
+const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
     const [activeTab, setActiveTab] = useState('hooks');
     const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [copied, setCopied] = useState('');
+    const [audioLoading, setAudioLoading] = useState(false);
+    const [audioSrc, setAudioSrc] = useState(null);
+
+    const handleGenerateAudio = async () => {
+        if (!voiceProfile?.voice_id) {
+            alert("Please set up your voice profile first in the Dashboard.");
+            return;
+        }
+        setAudioLoading(true);
+        setAudioSrc(null);
+        try {
+            const response = await fetch('/.netlify/functions/generate-audio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: content.script, voiceId: voiceProfile.voice_id }),
+            });
+            if (!response.ok) throw new Error("Failed to generate audio.");
+            const { audioData } = await response.json();
+            const audioUrl = `data:audio/mpeg;base64,${audioData}`;
+            setAudioSrc(audioUrl);
+        } catch (error) {
+            console.error("Audio generation error:", error);
+            alert("Sorry, we couldn't generate the audio preview.");
+        } finally {
+            setAudioLoading(false);
+        }
+    };
 
     const copyToClipboard = (text, type) => {
         navigator.clipboard.writeText(text);
@@ -133,6 +162,13 @@ const ResultsDisplay = ({ content, session, onScheduled }) => {
                     {activeTab === 'script' && (
                         <div className="bg-brand-background border border-brand-border rounded-lg p-6 whitespace-pre-line text-brand-text-secondary leading-relaxed group relative">
                             {content.script}
+                            <div className="mt-6 pt-4 border-t border-brand-border">
+                                <button onClick={handleGenerateAudio} disabled={audioLoading} className="flex items-center gap-2 bg-brand-accent text-black font-bold py-2 px-4 rounded-lg">
+                                    {audioLoading ? <LoadingSpinner /> : <PlayIcon />} 
+                                    {audioLoading ? 'Generating Audio...' : "Hear Director's Cut"}
+                                </button>
+                                {audioSrc && <audio controls src={audioSrc} className="w-full mt-4" />}
+                            </div>
                             <button onClick={() => copyToClipboard(content.script, 'script')} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
                                 {copied === 'script' ? 'Copied!' : 'Copy Script'}
                             </button>
@@ -176,8 +212,8 @@ const ResultsDisplay = ({ content, session, onScheduled }) => {
     );
 };
 
-// --- Calendar View Component (UPDATED) ---
-const CalendarView = ({ session }) => {
+// --- Calendar View Component ---
+const CalendarView = ({ session, voiceProfile }) => {
     const [events, setEvents] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
 
@@ -213,7 +249,7 @@ const CalendarView = ({ session }) => {
 
     return (
         <>
-            {selectedEvent && <BlueprintDetailModal blueprint={selectedEvent} closeModal={() => setSelectedEvent(null)} />}
+            {selectedEvent && <BlueprintDetailModal blueprint={selectedEvent} closeModal={() => setSelectedEvent(null)} session={session} voiceProfile={voiceProfile} />}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <h2 className="text-3xl font-bold text-brand-text-primary mb-6">Content Calendar</h2>
                 <div className="bg-brand-container border border-brand-border rounded-2xl p-1 md:p-6 h-[70vh] text-brand-text-primary">
@@ -231,8 +267,8 @@ const CalendarView = ({ session }) => {
 };
 
 
-// --- Dashboard Component (FIXED) ---
-const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal }) => {
+// --- Dashboard Component ---
+const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voiceProfile }) => {
     const [activeView, setActiveView] = useState('dashboard');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -354,7 +390,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal }) => 
                                 )}
                                 {error && <p className="text-red-400 text-center mt-4">{error}</p>}
                             </div>
-                            {generatedContent && <ResultsDisplay content={generatedContent} session={session} onScheduled={fetchHistory} />}
+                            {generatedContent && <ResultsDisplay content={generatedContent} session={session} onScheduled={fetchHistory} voiceProfile={voiceProfile} />}
                         </div>
                         <div className="lg:col-span-1 space-y-8">
                             <div className="bg-brand-container border border-brand-border rounded-2xl p-6">
@@ -387,7 +423,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal }) => 
                 </div>
             )}
 
-            {activeView === 'calendar' && <CalendarView session={session} />}
+            {activeView === 'calendar' && <CalendarView session={session} voiceProfile={voiceProfile} />}
         </>
     );
 };
@@ -449,6 +485,7 @@ const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
 const App = () => {
     const [session, setSession] = useState(null);
     const [profile, setProfile] = useState(null);
+    const [voiceProfile, setVoiceProfile] = useState(null);
     const [profileLoading, setProfileLoading] = useState(true);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
@@ -465,6 +502,8 @@ const App = () => {
             if (session) {
                 setShowAuthModal(false);
             } else {
+                setProfile(null);
+                setVoiceProfile(null);
                 setProfileLoading(false);
             }
         });
@@ -477,9 +516,16 @@ const App = () => {
             const fetchProfile = async () => {
                 const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
                 setProfile(data);
-                setProfileLoading(false);
             };
-            fetchProfile();
+            const fetchVoiceProfile = async () => {
+                const { data } = await supabase.from('voice_profiles').select('voice_id').eq('id', session.user.id).single();
+                setVoiceProfile(data);
+            };
+            Promise.all([fetchProfile(), fetchVoiceProfile()]).then(() => {
+                setProfileLoading(false);
+            });
+        } else {
+             setProfileLoading(false);
         }
     }, [session]);
 
@@ -519,7 +565,7 @@ const App = () => {
 
             <main>
                 {session ? (
-                    <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} />
+                    <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} />
                 ) : (
                     <div className="text-center py-20 px-4">
                         <h1 className="text-5xl md:text-6xl font-extrabold text-brand-text-primary">Stop Guessing. Start Going Viral.</h1>
