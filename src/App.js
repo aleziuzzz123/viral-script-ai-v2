@@ -99,9 +99,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal }) => 
     const [goal, setGoal] = useState('Go Viral / Maximize Reach');
     const [tone, setTone] = useState('Engaging');
     const [audience, setAudience] = useState('');
-    // FIX 1: Renamed 'history' to 'generationHistory' to avoid conflicts
     const [generationHistory, setGenerationHistory] = useState([]);
-    // FIX 2: Defined 'historyLoading' state variable
     const [historyLoading, setHistoryLoading] = useState(true);
 
     useEffect(() => {
@@ -236,8 +234,59 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal }) => 
 };
 
 // --- Buy Credits Modal ---
-const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => { /* ... (Same as before) */ };
+const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
+    const [loading, setLoading] = useState(false);
 
+    // Using your REAL Price IDs
+    const creditPacks = [
+        { name: 'Trial Pack', credits: 10, price: '$7', priceId: 'price_1RnqtMKucnJQ8ZaNjFzxoW85' },
+        { name: 'Creator Pack', credits: 50, price: '$27', priceId: 'price_1RnqtrKucnJQ8ZaNI5apjA4u' },
+        { name: 'Pro Pack', credits: '100 + 10 Bonus', price: '$47', priceId: 'price_1RnquFKucnJQ8ZaNR9Z6skUk', popular: true },
+        { name: 'Agency Pack', credits: '250 + 50 Bonus', price: '$97', priceId: 'price_1RnqucKucnJQ8ZaNt9SNptof' },
+    ];
+
+    const handlePurchase = async (priceId) => {
+        setLoading(true);
+        try {
+            const response = await fetch('/.netlify/functions/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ priceId, userId: session.user.id }),
+            });
+            const responseBody = await response.json();
+            if (!response.ok) {
+                throw new Error(responseBody.error || 'Failed to create checkout session.');
+            }
+            window.location.href = responseBody.url;
+        } catch (error) {
+            console.error("Stripe Checkout Error:", error.message);
+            alert(`An error occurred: ${error.message}`);
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-brand-container border border-brand-border rounded-2xl p-8 max-w-2xl w-full relative">
+                <button onClick={() => setShowBuyCreditsModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button>
+                <h3 className="text-3xl font-bold text-center text-brand-text-primary mb-2">Buy More Credits</h3>
+                <p className="text-brand-text-secondary text-center mb-8">Choose a pack to continue creating.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {creditPacks.map(pack => (
+                        <div key={pack.name} className={`bg-brand-background border-2 rounded-lg p-6 text-center ${pack.popular ? 'border-brand-accent' : 'border-brand-border'}`}>
+                            <h4 className="text-xl font-bold text-brand-text-primary">{pack.name}</h4>
+                            <p className="text-4xl font-extrabold text-brand-accent my-4">{pack.credits}</p>
+                            <p className="text-brand-text-secondary mb-6">Credits</p>
+                            <button onClick={() => handlePurchase(pack.priceId)} disabled={loading} className="w-full bg-brand-accent hover:opacity-90 text-black font-bold py-3 rounded-lg">
+                                {loading ? '...' : `Buy for ${pack.price}`}
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
 
 // --- Main App Component ---
 const App = () => {
@@ -246,9 +295,6 @@ const App = () => {
     const [profileLoading, setProfileLoading] = useState(true);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
-    
-    // The wizard state for the landing page was removed to simplify and fix build errors
-    // The main CTA on the landing page now directly opens the auth modal
 
     useEffect(() => {
         setProfileLoading(true);
@@ -326,3 +372,4 @@ const App = () => {
 };
 
 export default App;
+
