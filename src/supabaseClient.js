@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-// These special variables are read from your Netlify settings
-// They MUST start with REACT_APP_ to work in a React app
+// These special variables are read securely from your Netlify settings.
+// They MUST start with REACT_APP_ to be used in a React app.
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL
 const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
 
