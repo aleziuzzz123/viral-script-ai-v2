@@ -3,6 +3,7 @@ exports.handler = async function (event, context) {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
+  // Now accepts the new wizard inputs
   const { topic, goal, tone, audience } = JSON.parse(event.body);
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -15,7 +16,6 @@ exports.handler = async function (event, context) {
 
   const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
   
-  // --- THE NEW "MASTER PROMPT" BASED ON OUR ANALYSIS ---
   const prompt = `
     You are "Blueprint AI", a world-class viral video strategist. Your goal is to create a complete "Viral Video Blueprint" for the user.
     The user's inputs are:
@@ -65,3 +65,4 @@ exports.handler = async function (event, context) {
     return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
 };
+
