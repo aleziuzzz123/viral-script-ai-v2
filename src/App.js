@@ -2,7 +2,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './supabaseClient';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
+import format from 'date-fns/format';
+import parse from 'date-fns/parse';
+import startOfWeek from 'date-fns/startOfWeek';
+import getDay from 'date-fns/getDay';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './App.css';
+
+// --- Localizer for the Calendar ---
+const locales = { 'en-US': require('date-fns/locale/en-US') };
+const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
 
 // --- SVG Icons ---
 const CreditIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12h2v4h-2v-4zm0 6h2v2h-2v-2z" fill="currentColor"/></svg>;
@@ -11,9 +21,48 @@ const VisualsIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="
 const AudioIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="currentColor"/></svg>;
 const HashtagIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M10.59 4.59C10.21 4.21 9.7 4 9.17 4H4c-1.1 0-2 .9-2 2v5.17c0 .53.21 1.04.59 1.41l8.83 8.83c.78.78 2.05.78 2.83 0l5.17-5.17c.78-.78.78-2.05 0-2.83l-8.83-8.83zM6.5 8C5.67 8 5 7.33 5 6.5S5.67 5 6.5 5 8 5.67 8 6.5 7.33 8 6.5 8z" fill="currentColor"/></svg>;
 
-// --- Results Component with Copy Functionality ---
-const ResultsDisplay = ({ content }) => {
+// --- Schedule Modal ---
+const ScheduleModal = ({ blueprint, session, setShow, onScheduled }) => {
+    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [saving, setSaving] = useState(false);
+
+    const handleSave = async () => {
+        setSaving(true);
+        const { error } = await supabase.from('scheduled_posts').insert({
+            user_id: session.user.id,
+            scheduled_for: date,
+            title: blueprint.hooks[0].text,
+            blueprint: blueprint,
+        });
+
+        if (error) {
+            alert('Error scheduling post: ' + error.message);
+        } else {
+            setShow(false);
+            onScheduled(); // Callback to refresh the calendar view
+        }
+        setSaving(false);
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-brand-container border border-brand-border rounded-2xl p-8 max-w-md w-full relative">
+                <button onClick={() => setShow(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button>
+                <h3 className="text-2xl font-bold text-center text-brand-text-primary mb-4">Schedule Blueprint</h3>
+                <p className="text-brand-text-secondary text-center mb-6">Choose a date to add this to your content calendar.</p>
+                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3" />
+                <button onClick={handleSave} disabled={saving} className="w-full mt-4 bg-brand-accent hover:opacity-90 text-black font-bold py-3 rounded-lg">
+                    {saving ? 'Saving...' : 'Add to Calendar'}
+                </button>
+            </div>
+        </div>
+    );
+};
+
+// --- Results Component ---
+const ResultsDisplay = ({ content, session, onScheduled }) => {
     const [activeTab, setActiveTab] = useState('hooks');
+    const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [copied, setCopied] = useState('');
 
     const copyToClipboard = (text, type) => {
@@ -31,82 +80,134 @@ const ResultsDisplay = ({ content }) => {
             default: return 'bg-gray-500/10 text-gray-400 border-gray-500/30';
         }
     };
-
+    
     return (
-        <div className="mt-8 bg-brand-container border border-brand-border rounded-2xl">
-            <div className="border-b border-brand-border flex">
-                <button onClick={() => setActiveTab('hooks')} className={`px-4 py-3 font-semibold ${activeTab === 'hooks' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Hooks & Scores</button>
-                <button onClick={() => setActiveTab('script')} className={`px-4 py-3 font-semibold ${activeTab === 'script' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Full Script</button>
-                <button onClick={() => setActiveTab('plan')} className={`px-4 py-3 font-semibold ${activeTab === 'plan' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Production Plan</button>
-            </div>
-            <div className="p-6">
-                {activeTab === 'hooks' && (
-                    <div className="space-y-4">
-                        {content.hooks.map((hook, index) => (
-                            <div key={index} className="bg-brand-background border border-brand-border rounded-lg p-4 group relative">
-                                <div className="flex justify-between items-start mb-2">
-                                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getCategoryClass(hook.category)}`}>{hook.category}</span>
-                                    <div className="text-center flex-shrink-0 ml-4">
-                                        <p className="font-bold text-2xl text-brand-accent">{hook.score}</p>
-                                        <p className="text-xs text-brand-text-secondary">Viral Score</p>
+        <>
+            {showScheduleModal && <ScheduleModal blueprint={content} session={session} setShow={setShowScheduleModal} onScheduled={onScheduled} />}
+            <div className="mt-8 bg-brand-container border border-brand-border rounded-2xl">
+                <div className="flex justify-between items-center pr-4 border-b border-brand-border">
+                    <div className="flex">
+                        <button onClick={() => setActiveTab('hooks')} className={`px-4 py-3 font-semibold ${activeTab === 'hooks' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Hooks & Scores</button>
+                        <button onClick={() => setActiveTab('script')} className={`px-4 py-3 font-semibold ${activeTab === 'script' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Full Script</button>
+                        <button onClick={() => setActiveTab('plan')} className={`px-4 py-3 font-semibold ${activeTab === 'plan' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Production Plan</button>
+                    </div>
+                    <button onClick={() => setShowScheduleModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-2 px-4 rounded-lg text-sm">Schedule</button>
+                </div>
+                <div className="p-6">
+                    {activeTab === 'hooks' && (
+                        <div className="space-y-4">
+                            {content.hooks.map((hook, index) => (
+                                <div key={index} className="bg-brand-background border border-brand-border rounded-lg p-4 group relative">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getCategoryClass(hook.category)}`}>{hook.category}</span>
+                                        <div className="text-center flex-shrink-0 ml-4">
+                                            <p className="font-bold text-2xl text-brand-accent">{hook.score}</p>
+                                            <p className="text-xs text-brand-text-secondary">Viral Score</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <p className="text-brand-text-primary pr-12">{hook.text}</p>
-                                <p className="text-sm text-brand-text-secondary mt-2 italic opacity-75">"{hook.analysis}"</p>
-                                <button onClick={() => copyToClipboard(hook.text, `hook-${index}`)} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                                    {copied === `hook-${index}` ? 'Copied!' : 'Copy'}
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-                {activeTab === 'script' && (
-                    <div className="bg-brand-background border border-brand-border rounded-lg p-6 whitespace-pre-line text-brand-text-secondary leading-relaxed group relative">
-                        {content.script}
-                        <button onClick={() => copyToClipboard(content.script, 'script')} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                            {copied === 'script' ? 'Copied!' : 'Copy Script'}
-                        </button>
-                    </div>
-                )}
-                {activeTab === 'plan' && (
-                    <div className="space-y-6">
-                        <div className="flex items-start gap-4">
-                            <VisualsIcon />
-                            <div>
-                                <h4 className="font-semibold text-brand-text-primary mb-2">Visual Ideas</h4>
-                                <ul className="list-disc list-inside space-y-1 text-brand-text-secondary">
-                                    {content.production_plan.visuals.map((v, i) => <li key={i}>{v}</li>)}
-                                </ul>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-4">
-                            <AudioIcon />
-                            <div>
-                                <h4 className="font-semibold text-brand-text-primary mb-2">Audio Suggestion</h4>
-                                <p className="text-brand-text-secondary">{content.production_plan.audio}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-4">
-                            <HashtagIcon />
-                            <div>
-                                <h4 className="font-semibold text-brand-text-primary mb-2">Hashtag Strategy</h4>
-                                <div className="flex flex-wrap gap-2 group relative">
-                                    {content.production_plan.hashtags.map((h, i) => <span key={i} className="bg-brand-background border border-brand-border text-brand-text-secondary text-sm font-medium px-3 py-1 rounded-full">{h}</span>)}
-                                    <button onClick={() => copyToClipboard(content.production_plan.hashtags.join(' '), 'hashtags')} className="absolute -top-2 -right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                                        {copied === 'hashtags' ? 'Copied!' : 'Copy All'}
+                                    <p className="text-brand-text-primary pr-12">{hook.text}</p>
+                                    <p className="text-sm text-brand-text-secondary mt-2 italic opacity-75">"{hook.analysis}"</p>
+                                    <button onClick={() => copyToClipboard(hook.text, `hook-${index}`)} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {copied === `hook-${index}` ? 'Copied!' : 'Copy'}
                                     </button>
                                 </div>
+                            ))}
+                        </div>
+                    )}
+                    {activeTab === 'script' && (
+                        <div className="bg-brand-background border border-brand-border rounded-lg p-6 whitespace-pre-line text-brand-text-secondary leading-relaxed group relative">
+                            {content.script}
+                            <button onClick={() => copyToClipboard(content.script, 'script')} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                {copied === 'script' ? 'Copied!' : 'Copy Script'}
+                            </button>
+                        </div>
+                    )}
+                    {activeTab === 'plan' && (
+                        <div className="space-y-6">
+                            <div className="flex items-start gap-4">
+                                <VisualsIcon />
+                                <div>
+                                    <h4 className="font-semibold text-brand-text-primary mb-2">Visual Ideas</h4>
+                                    <ul className="list-disc list-inside space-y-1 text-brand-text-secondary">
+                                        {content.production_plan.visuals.map((v, i) => <li key={i}>{v}</li>)}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-4">
+                                <AudioIcon />
+                                <div>
+                                    <h4 className="font-semibold text-brand-text-primary mb-2">Audio Suggestion</h4>
+                                    <p className="text-brand-text-secondary">{content.production_plan.audio}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-4">
+                                <HashtagIcon />
+                                <div>
+                                    <h4 className="font-semibold text-brand-text-primary mb-2">Hashtag Strategy</h4>
+                                    <div className="flex flex-wrap gap-2 group relative">
+                                        {content.production_plan.hashtags.map((h, i) => <span key={i} className="bg-brand-background border border-brand-border text-brand-text-secondary text-sm font-medium px-3 py-1 rounded-full">{h}</span>)}
+                                        <button onClick={() => copyToClipboard(content.production_plan.hashtags.join(' '), 'hashtags')} className="absolute -top-2 -right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {copied === 'hashtags' ? 'Copied!' : 'Copy All'}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
+            </div>
+        </>
+    );
+};
+
+// --- Calendar View Component ---
+const CalendarView = ({ session }) => {
+    const [events, setEvents] = useState([]);
+
+    const fetchEvents = useCallback(async () => {
+        if (!session?.user) return;
+        const { data, error } = await supabase
+            .from('scheduled_posts')
+            .select('id, title, scheduled_for')
+            .eq('user_id', session.user.id);
+
+        if (error) {
+            console.error("Error fetching scheduled posts:", error);
+        } else {
+            const formattedEvents = data.map(post => ({
+                id: post.id,
+                title: post.title,
+                start: new Date(post.scheduled_for),
+                end: new Date(post.scheduled_for),
+                allDay: true,
+            }));
+            setEvents(formattedEvents);
+        }
+    }, [session]);
+
+    useEffect(() => {
+        fetchEvents();
+    }, [fetchEvents]);
+
+    return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h2 className="text-3xl font-bold text-brand-text-primary mb-6">Content Calendar</h2>
+            <div className="bg-brand-container border border-brand-border rounded-2xl p-1 md:p-6 h-[70vh] text-brand-text-primary">
+                <Calendar
+                    localizer={localizer}
+                    events={events}
+                    startAccessor="start"
+                    endAccessor="end"
+                />
             </div>
         </div>
     );
 };
 
+
 // --- Dashboard Component ---
 const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal }) => {
+    const [activeView, setActiveView] = useState('dashboard');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [generatedContent, setGeneratedContent] = useState(null);
@@ -115,7 +216,21 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal }) => 
     const [goal, setGoal] = useState('Go Viral / Maximize Reach');
     const [tone, setTone] = useState('Engaging');
     const [audience, setAudience] = useState('');
-    
+    const [generationHistory, setGenerationHistory] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(true);
+
+    const fetchHistory = useCallback(async () => {
+        if (!session?.user) return;
+        setHistoryLoading(true);
+        const { data } = await supabase.from('generations').select('id, created_at, topic').eq('user_id', session.user.id).order('created_at', { ascending: false }).limit(5);
+        setGenerationHistory(data || []);
+        setHistoryLoading(false);
+    }, [session]);
+
+    useEffect(() => {
+        fetchHistory();
+    }, [session, generatedContent, fetchHistory]);
+
     const handleGenerate = useCallback(async () => {
         if (!profile || profile.credits < 1) { setShowBuyCreditsModal(true); return; }
         if (!topic) { setError('Please enter a topic.'); return; }
@@ -146,94 +261,111 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal }) => 
     }, [topic, goal, tone, audience, profile, session, setProfile, wizardStep, setShowBuyCreditsModal]);
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-brand-container border border-brand-border rounded-2xl p-8">
-                        <h2 className="text-3xl font-bold text-brand-text-primary">Dashboard</h2>
-                        <p className="text-brand-text-secondary mt-2 mb-6">Let's create your next viral hit.</p>
-                        
-                        {wizardStep === 1 && (
-                            <div>
-                                <label className="font-semibold text-lg text-brand-text-primary block mb-3">What's your video topic?</label>
-                                <div className="flex flex-col sm:flex-row gap-2">
-                                    <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to start a podcast'" className="w-full bg-brand-background border border-brand-border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-brand-accent" />
-                                    <button onClick={handleGenerate} className="bg-brand-accent hover:opacity-90 text-black font-bold py-3 px-6 rounded-lg whitespace-nowrap">Create Blueprint</button>
-                                </div>
-                            </div>
-                        )}
+        <>
+            <nav className="border-b border-brand-border bg-brand-container">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex">
+                    <button onClick={() => setActiveView('dashboard')} className={`px-4 py-3 font-semibold ${activeView === 'dashboard' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Dashboard</button>
+                    <button onClick={() => setActiveView('calendar')} className={`px-4 py-3 font-semibold ${activeView === 'calendar' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Content Calendar</button>
+                </div>
+            </nav>
 
-                        {wizardStep === 2 && (
-                            <div className="space-y-6 text-left">
-                                <div>
-                                    <label className="font-semibold text-brand-text-primary block mb-2">What is your primary goal?</label>
-                                    <select value={goal} onChange={(e) => setGoal(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3">
-                                        <option>Go Viral / Maximize Reach</option>
-                                        <option>Sell a Product / Service</option>
-                                        <option>Educate My Audience</option>
-                                        <option>Tell a Personal Story</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="font-semibold text-brand-text-primary block mb-2">What is the desired tone?</label>
-                                    <select value={tone} onChange={(e) => setTone(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3">
-                                        <option>Engaging</option>
-                                        <option>Funny & Comedic</option>
-                                        <option>Inspirational & Motivational</option>
-                                        <option>Serious & Educational</option>
-                                        <option>Shocking & Controversial</option>
-                                    </select>
-                                </div>
-                                 <div>
-                                    <label className="font-semibold text-brand-text-primary block mb-2">Briefly describe your target audience.</label>
-                                    <input type="text" value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="e.g., 'Beginner entrepreneurs'" className="w-full bg-brand-background border border-brand-border rounded-lg p-3" />
-                                </div>
-                                <button onClick={handleGenerate} disabled={isLoading} className="w-full bg-brand-accent hover:opacity-90 text-black font-bold py-4 rounded-lg text-lg">
-                                    {isLoading ? 'Generating...' : 'Generate My Custom Blueprint'}
-                                </button>
+            {activeView === 'dashboard' && (
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2 space-y-8">
+                            <div className="bg-brand-container border border-brand-border rounded-2xl p-8">
+                                <h2 className="text-3xl font-bold text-brand-text-primary">Dashboard</h2>
+                                <p className="text-brand-text-secondary mt-2 mb-6">Let's create your next viral hit.</p>
+                                
+                                {wizardStep === 1 && (
+                                    <div>
+                                        <label className="font-semibold text-lg text-brand-text-primary block mb-3">What's your video topic?</label>
+                                        <div className="flex flex-col sm:flex-row gap-2">
+                                            <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to start a podcast'" className="w-full bg-brand-background border border-brand-border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-brand-accent" />
+                                            <button onClick={handleGenerate} className="bg-brand-accent hover:opacity-90 text-black font-bold py-3 px-6 rounded-lg whitespace-nowrap">Create Blueprint</button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {wizardStep === 2 && (
+                                    <div className="space-y-6 text-left">
+                                        <div>
+                                            <label className="font-semibold text-brand-text-primary block mb-2">What is your primary goal?</label>
+                                            <select value={goal} onChange={(e) => setGoal(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3">
+                                                <option>Go Viral / Maximize Reach</option>
+                                                <option>Sell a Product / Service</option>
+                                                <option>Educate My Audience</option>
+                                                <option>Tell a Personal Story</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="font-semibold text-brand-text-primary block mb-2">What is the desired tone?</label>
+                                            <select value={tone} onChange={(e) => setTone(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3">
+                                                <option>Engaging</option>
+                                                <option>Funny & Comedic</option>
+                                                <option>Inspirational & Motivational</option>
+                                                <option>Serious & Educational</option>
+                                                <option>Shocking & Controversial</option>
+                                            </select>
+                                        </div>
+                                         <div>
+                                            <label className="font-semibold text-brand-text-primary block mb-2">Briefly describe your target audience.</label>
+                                            <input type="text" value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="e.g., 'Beginner entrepreneurs'" className="w-full bg-brand-background border border-brand-border rounded-lg p-3" />
+                                        </div>
+                                        <button onClick={handleGenerate} disabled={isLoading} className="w-full bg-brand-accent hover:opacity-90 text-black font-bold py-4 rounded-lg text-lg">
+                                            {isLoading ? 'Generating...' : 'Generate My Custom Blueprint'}
+                                        </button>
+                                    </div>
+                                )}
+                                {error && <p className="text-red-400 text-center mt-4">{error}</p>}
                             </div>
-                        )}
-                        {error && <p className="text-red-400 text-center mt-4">{error}</p>}
-                    </div>
-                    {generatedContent && <ResultsDisplay content={generatedContent} />}
-                </div>
-                <div className="lg:col-span-1 space-y-8">
-                    <div className="bg-brand-container border border-brand-border rounded-2xl p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                            <CreditIcon />
-                            <h3 className="text-lg font-semibold text-brand-text-primary">Credit Balance</h3>
+                            {generatedContent && <ResultsDisplay content={generatedContent} session={session} onScheduled={fetchHistory} />}
                         </div>
-                        <p className="text-5xl font-bold text-brand-accent">{profile ? profile.credits : '0'}</p>
-                        <button onClick={() => setShowBuyCreditsModal(true)} className="w-full mt-4 bg-brand-accent hover:opacity-90 text-black font-bold py-3 rounded-lg">Buy More Credits</button>
-                    </div>
-                    <div className="bg-brand-container border border-brand-border rounded-2xl p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                            <HistoryIcon />
-                            <h3 className="text-lg font-semibold text-brand-text-primary">Recent Activity</h3>
+                        <div className="lg:col-span-1 space-y-8">
+                            <div className="bg-brand-container border border-brand-border rounded-2xl p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <CreditIcon />
+                                    <h3 className="text-lg font-semibold text-brand-text-primary">Credit Balance</h3>
+                                </div>
+                                <p className="text-5xl font-bold text-brand-accent">{profile ? profile.credits : '0'}</p>
+                                <button onClick={() => setShowBuyCreditsModal(true)} className="w-full mt-4 bg-brand-accent hover:opacity-90 text-black font-bold py-3 rounded-lg">Buy More Credits</button>
+                            </div>
+                            <div className="bg-brand-container border border-brand-border rounded-2xl p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <HistoryIcon />
+                                    <h3 className="text-lg font-semibold text-brand-text-primary">Recent Activity</h3>
+                                </div>
+                                <ul className="space-y-3 text-sm text-brand-text-secondary">
+                                    {historyLoading ? (
+                                        <p>Loading history...</p>
+                                    ) : generationHistory.length > 0 ? (
+                                        generationHistory.map(item => (
+                                            <li key={item.id} className="truncate">Generated scripts for "{item.topic}"</li>
+                                        ))
+                                    ) : (
+                                        <p>No activity yet.</p>
+                                    )}
+                                </ul>
+                            </div>
                         </div>
-                        <ul className="space-y-3 text-sm text-brand-text-secondary">
-                            <li className="truncate">Generated scripts for "Keto Diet"</li>
-                            <li className="truncate">Generated scripts for "Side Hustles"</li>
-                        </ul>
                     </div>
                 </div>
-            </div>
-        </div>
+            )}
+
+            {activeView === 'calendar' && <CalendarView session={session} />}
+        </>
     );
 };
 
 // --- Buy Credits Modal ---
 const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
     const [loading, setLoading] = useState(false);
-
-    // Using your REAL Price IDs
     const creditPacks = [
         { name: 'Trial Pack', credits: 10, price: '$7', priceId: 'price_1RnqtMKucnJQ8ZaNjFzxoW85' },
         { name: 'Creator Pack', credits: 50, price: '$27', priceId: 'price_1RnqtrKucnJQ8ZaNI5apjA4u' },
         { name: 'Pro Pack', credits: '100 + 10 Bonus', price: '$47', priceId: 'price_1RnquFKucnJQ8ZaNR9Z6skUk', popular: true },
         { name: 'Agency Pack', credits: '250 + 50 Bonus', price: '$97', priceId: 'price_1RnqucKucnJQ8ZaNt9SNptof' },
     ];
-
     const handlePurchase = async (priceId) => {
         setLoading(true);
         try {
@@ -285,6 +417,7 @@ const App = () => {
     const [profileLoading, setProfileLoading] = useState(true);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
+    const [topic, setTopic] = useState('');
 
     useEffect(() => {
         setProfileLoading(true);
@@ -314,6 +447,11 @@ const App = () => {
             fetchProfile();
         }
     }, [session]);
+
+    const handleGuestGenerate = () => {
+        if (!topic) { alert("Please enter a topic to start."); return; }
+        setShowAuthModal(true);
+    }
 
     return (
         <div className="bg-brand-background text-brand-text-secondary min-h-screen font-sans">
@@ -352,7 +490,10 @@ const App = () => {
                         <h1 className="text-5xl md:text-6xl font-extrabold text-brand-text-primary">Stop Guessing. Start Going Viral.</h1>
                         <p className="text-xl text-brand-text-secondary max-w-3xl mx-auto mt-6 mb-10">Generate a complete viral video blueprint—from hooks to hashtags—in seconds.</p>
                         <div className="max-w-2xl mx-auto">
-                           <button onClick={() => setShowAuthModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-4 px-8 rounded-lg text-lg">Generate Your First Blueprint Free</button>
+                           <div className="flex flex-col sm:flex-row gap-2">
+                                <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Enter a topic to get started..." className="w-full bg-brand-container border border-brand-border rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-brand-accent" />
+                                <button onClick={handleGuestGenerate} className="bg-brand-accent hover:opacity-90 text-black font-bold py-3 px-6 rounded-lg whitespace-nowrap">Generate Free Blueprint</button>
+                            </div>
                         </div>
                     </div>
                 )}
