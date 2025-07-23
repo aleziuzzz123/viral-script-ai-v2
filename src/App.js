@@ -2,20 +2,11 @@ import React, { useState, useEffect, useCallback, useRef, createContext, useCont
 import { supabase } from './supabaseClient';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
-import format from 'date-fns/format';
-import parse from 'date-fns/parse';
-import startOfWeek from 'date-fns/startOfWeek';
-import getDay from 'date-fns/getDay';
-import enUS from 'date-fns/locale/en-US'; // --- FIX: Correct import for date-fns locale ---
-import 'react-big-calendar/lib/css/react-big-calendar.css';
+import Calendar from 'react-calendar'; // --- FIX: Replaced react-big-calendar
+import 'react-calendar/dist/Calendar.css'; // --- FIX: New CSS for the calendar
 import './App.css';
 
-// --- Localizer for the Calendar (FIXED) ---
-const locales = { 'en-US': enUS };
-const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
-
-// --- Toast Notification System (NEW) ---
+// --- Toast Notification System ---
 const ToastContext = createContext();
 const ToastProvider = ({ children }) => {
     const [toasts, setToasts] = useState([]);
@@ -255,38 +246,58 @@ const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
     );
 };
 
-// --- Calendar View Component ---
+// --- Calendar View Component (UPDATED with react-calendar) ---
 const CalendarView = ({ session, voiceProfile }) => {
     const [events, setEvents] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
+    const [date, setDate] = useState(new Date());
+
     const fetchEvents = useCallback(async () => {
         if (!session?.user) return;
         const { data, error } = await supabase.from('generated_content').select('id, topic, created_at, blueprint').eq('user_id', session.user.id);
         if (error) {
             console.error("Error fetching content for calendar:", error);
         } else {
-            const formattedEvents = data.map(post => ({
-                id: post.id,
-                title: post.topic,
-                start: new Date(post.created_at),
-                end: new Date(post.created_at),
-                allDay: true,
-                blueprint: post.blueprint
-            }));
-            setEvents(formattedEvents);
+            setEvents(data);
         }
     }, [session]);
-    useEffect(() => { fetchEvents(); }, [fetchEvents]);
-    const handleSelectEvent = (event) => {
-        setSelectedEvent(event.blueprint);
+
+    useEffect(() => {
+        fetchEvents();
+    }, [fetchEvents]);
+
+    const handleDayClick = (value) => {
+        const clickedDate = value.toDateString();
+        const eventForDay = events.find(e => new Date(e.created_at).toDateString() === clickedDate);
+        if (eventForDay) {
+            setSelectedEvent(eventForDay.blueprint);
+        }
     };
+
+    const tileContent = ({ date, view }) => {
+        if (view === 'month') {
+            const dateString = date.toDateString();
+            const hasEvent = events.some(e => new Date(e.created_at).toDateString() === dateString);
+            if (hasEvent) {
+                return <div className="h-2 w-2 bg-brand-accent rounded-full mx-auto mt-1"></div>;
+            }
+        }
+        return null;
+    };
+
     return (
         <>
             {selectedEvent && <BlueprintDetailModal blueprint={selectedEvent} closeModal={() => setSelectedEvent(null)} session={session} voiceProfile={voiceProfile} />}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <h2 className="text-3xl font-bold text-brand-text-primary mb-6">Content Calendar</h2>
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-1 md:p-6 h-[70vh] text-brand-text-primary">
-                    <Calendar localizer={localizer} events={events} startAccessor="start" endAccessor="end" onSelectEvent={handleSelectEvent} />
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4">
+                    <Calendar
+                        onChange={setDate}
+                        value={date}
+                        onClickDay={handleDayClick}
+                        tileContent={tileContent}
+                        className="react-calendar-override"
+                    />
                 </div>
             </div>
         </>
