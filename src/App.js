@@ -22,6 +22,7 @@ const AudioIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="no
 const HashtagIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M10.59 4.59C10.21 4.21 9.7 4 9.17 4H4c-1.1 0-2 .9-2 2v5.17c0 .53.21 1.04.59 1.41l8.83 8.83c.78.78 2.05.78 2.83 0l5.17-5.17c.78-.78.78-2.05 0-2.83l-8.83-8.83zM6.5 8C5.67 8 5 7.33 5 6.5S5.67 5 6.5 5 8 5.67 8 6.5 7.33 8 6.5 8z" fill="currentColor"/></svg>;
 const PlayIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>;
 const LoadingSpinner = () => <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>;
+const VoiceIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z" fill="currentColor"></path></svg>;
 
 // --- Blueprint Detail Modal ---
 const BlueprintDetailModal = ({ blueprint, closeModal, session, voiceProfile }) => {
@@ -43,7 +44,6 @@ const BlueprintDetailModal = ({ blueprint, closeModal, session, voiceProfile }) 
 const ScheduleModal = ({ blueprint, session, setShow, onScheduled }) => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [saving, setSaving] = useState(false);
-
     const handleSave = async () => {
         setSaving(true);
         const { error } = await supabase.from('scheduled_posts').insert({
@@ -52,29 +52,15 @@ const ScheduleModal = ({ blueprint, session, setShow, onScheduled }) => {
             title: blueprint.hooks[0].text,
             blueprint: blueprint,
         });
-
         if (error) {
             alert('Error scheduling post: ' + error.message);
         } else {
             setShow(false);
-            onScheduled(); // Callback to refresh the calendar view
+            onScheduled();
         }
         setSaving(false);
     };
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-brand-container border border-brand-border rounded-2xl p-8 max-w-md w-full relative">
-                <button onClick={() => setShow(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button>
-                <h3 className="text-2xl font-bold text-center text-brand-text-primary mb-4">Schedule Blueprint</h3>
-                <p className="text-brand-text-secondary text-center mb-6">Choose a date to add this to your content calendar.</p>
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3" />
-                <button onClick={handleSave} disabled={saving} className="w-full mt-4 bg-brand-accent hover:opacity-90 text-black font-bold py-3 rounded-lg">
-                    {saving ? 'Saving...' : 'Add to Calendar'}
-                </button>
-            </div>
-        </div>
-    );
+    return ( <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4"><div className="bg-brand-container border border-brand-border rounded-2xl p-8 max-w-md w-full relative"><button onClick={() => setShow(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button><h3 className="text-2xl font-bold text-center text-brand-text-primary mb-4">Schedule Blueprint</h3><p className="text-brand-text-secondary text-center mb-6">Choose a date to add this to your content calendar.</p><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3" /><button onClick={handleSave} disabled={saving} className="w-full mt-4 bg-brand-accent hover:opacity-90 text-black font-bold py-3 rounded-lg">{saving ? 'Saving...' : 'Add to Calendar'}</button></div></div>);
 };
 
 // --- Results Component ---
@@ -87,7 +73,7 @@ const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
 
     const handleGenerateAudio = async () => {
         if (!voiceProfile?.voice_id) {
-            alert("Please set up your voice profile first in the Dashboard.");
+            alert("Please set up your voice profile first in the Account settings.");
             return;
         }
         setAudioLoading(true);
@@ -139,73 +125,9 @@ const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
                     {onScheduled && <button onClick={() => setShowScheduleModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-2 px-4 rounded-lg text-sm">Schedule</button>}
                 </div>
                 <div className="p-6">
-                    {activeTab === 'hooks' && (
-                        <div className="space-y-4">
-                            {content.hooks.map((hook, index) => (
-                                <div key={index} className="bg-brand-background border border-brand-border rounded-lg p-4 group relative">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getCategoryClass(hook.category)}`}>{hook.category}</span>
-                                        <div className="text-center flex-shrink-0 ml-4">
-                                            <p className="font-bold text-2xl text-brand-accent">{hook.score}</p>
-                                            <p className="text-xs text-brand-text-secondary">Viral Score</p>
-                                        </div>
-                                    </div>
-                                    <p className="text-brand-text-primary pr-12">{hook.text}</p>
-                                    <p className="text-sm text-brand-text-secondary mt-2 italic opacity-75">"{hook.analysis}"</p>
-                                    <button onClick={() => copyToClipboard(hook.text, `hook-${index}`)} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                                        {copied === `hook-${index}` ? 'Copied!' : 'Copy'}
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    {activeTab === 'script' && (
-                        <div className="bg-brand-background border border-brand-border rounded-lg p-6 whitespace-pre-line text-brand-text-secondary leading-relaxed group relative">
-                            {content.script}
-                            <div className="mt-6 pt-4 border-t border-brand-border">
-                                <button onClick={handleGenerateAudio} disabled={audioLoading} className="flex items-center gap-2 bg-brand-accent text-black font-bold py-2 px-4 rounded-lg">
-                                    {audioLoading ? <LoadingSpinner /> : <PlayIcon />} 
-                                    {audioLoading ? 'Generating Audio...' : "Hear Director's Cut"}
-                                </button>
-                                {audioSrc && <audio controls src={audioSrc} className="w-full mt-4" />}
-                            </div>
-                            <button onClick={() => copyToClipboard(content.script, 'script')} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                                {copied === 'script' ? 'Copied!' : 'Copy Script'}
-                            </button>
-                        </div>
-                    )}
-                    {activeTab === 'plan' && (
-                        <div className="space-y-6">
-                            <div className="flex items-start gap-4">
-                                <VisualsIcon />
-                                <div>
-                                    <h4 className="font-semibold text-brand-text-primary mb-2">Visual Ideas</h4>
-                                    <ul className="list-disc list-inside space-y-1 text-brand-text-secondary">
-                                        {content.production_plan.visuals.map((v, i) => <li key={i}>{v}</li>)}
-                                    </ul>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-4">
-                                <AudioIcon />
-                                <div>
-                                    <h4 className="font-semibold text-brand-text-primary mb-2">Audio Suggestion</h4>
-                                    <p className="text-brand-text-secondary">{content.production_plan.audio}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-4">
-                                <HashtagIcon />
-                                <div>
-                                    <h4 className="font-semibold text-brand-text-primary mb-2">Hashtag Strategy</h4>
-                                    <div className="flex flex-wrap gap-2 group relative">
-                                        {content.production_plan.hashtags.map((h, i) => <span key={i} className="bg-brand-background border border-brand-border text-brand-text-secondary text-sm font-medium px-3 py-1 rounded-full">{h}</span>)}
-                                        <button onClick={() => copyToClipboard(content.production_plan.hashtags.join(' '), 'hashtags')} className="absolute -top-2 -right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {copied === 'hashtags' ? 'Copied!' : 'Copy All'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {activeTab === 'hooks' && (<div className="space-y-4">{content.hooks.map((hook, index) => (<div key={index} className="bg-brand-background border border-brand-border rounded-lg p-4 group relative"><div className="flex justify-between items-start mb-2"><span className={`text-xs font-semibold px-2 py-1 rounded-full ${getCategoryClass(hook.category)}`}>{hook.category}</span><div className="text-center flex-shrink-0 ml-4"><p className="font-bold text-2xl text-brand-accent">{hook.score}</p><p className="text-xs text-brand-text-secondary">Viral Score</p></div></div><p className="text-brand-text-primary pr-12">{hook.text}</p><p className="text-sm text-brand-text-secondary mt-2 italic opacity-75">"{hook.analysis}"</p><button onClick={() => copyToClipboard(hook.text, `hook-${index}`)} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">{copied === `hook-${index}` ? 'Copied!' : 'Copy'}</button></div>))}</div>)}
+                    {activeTab === 'script' && (<div className="bg-brand-background border border-brand-border rounded-lg p-6 whitespace-pre-line text-brand-text-secondary leading-relaxed group relative">{content.script}<div className="mt-6 pt-4 border-t border-brand-border"><button onClick={handleGenerateAudio} disabled={audioLoading} className="flex items-center gap-2 bg-brand-accent text-black font-bold py-2 px-4 rounded-lg">{audioLoading ? <LoadingSpinner /> : <PlayIcon />} {audioLoading ? 'Generating Audio...' : "Hear Director's Cut"}</button>{audioSrc && <audio controls src={audioSrc} className="w-full mt-4" />}</div><button onClick={() => copyToClipboard(content.script, 'script')} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">{copied === 'script' ? 'Copied!' : 'Copy Script'}</button></div>)}
+                    {activeTab === 'plan' && (<div className="space-y-6"><div className="flex items-start gap-4"><VisualsIcon /><div><h4 className="font-semibold text-brand-text-primary mb-2">Visual Ideas</h4><ul className="list-disc list-inside space-y-1 text-brand-text-secondary">{content.production_plan.visuals.map((v, i) => <li key={i}>{v}</li>)}</ul></div></div><div className="flex items-start gap-4"><AudioIcon /><div><h4 className="font-semibold text-brand-text-primary mb-2">Audio Suggestion</h4><p className="text-brand-text-secondary">{content.production_plan.audio}</p></div></div><div className="flex items-start gap-4"><HashtagIcon /><div><h4 className="font-semibold text-brand-text-primary mb-2">Hashtag Strategy</h4><div className="flex flex-wrap gap-2 group relative">{content.production_plan.hashtags.map((h, i) => <span key={i} className="bg-brand-background border border-brand-border text-brand-text-secondary text-sm font-medium px-3 py-1 rounded-full">{h}</span>)}<button onClick={() => copyToClipboard(content.production_plan.hashtags.join(' '), 'hashtags')} className="absolute -top-2 -right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">{copied === 'hashtags' ? 'Copied!' : 'Copy All'}</button></div></div></div></div>)}
                 </div>
             </div>
         </>
@@ -216,14 +138,9 @@ const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
 const CalendarView = ({ session, voiceProfile }) => {
     const [events, setEvents] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
-
     const fetchEvents = useCallback(async () => {
         if (!session?.user) return;
-        const { data, error } = await supabase
-            .from('generated_content')
-            .select('id, topic, created_at, blueprint')
-            .eq('user_id', session.user.id);
-
+        const { data, error } = await supabase.from('generated_content').select('id, topic, created_at, blueprint').eq('user_id', session.user.id);
         if (error) {
             console.error("Error fetching content for calendar:", error);
         } else {
@@ -238,37 +155,105 @@ const CalendarView = ({ session, voiceProfile }) => {
             setEvents(formattedEvents);
         }
     }, [session]);
-
-    useEffect(() => {
-        fetchEvents();
-    }, [fetchEvents]);
-
+    useEffect(() => { fetchEvents(); }, [fetchEvents]);
     const handleSelectEvent = (event) => {
         setSelectedEvent(event.blueprint);
     };
-
     return (
         <>
             {selectedEvent && <BlueprintDetailModal blueprint={selectedEvent} closeModal={() => setSelectedEvent(null)} session={session} voiceProfile={voiceProfile} />}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <h2 className="text-3xl font-bold text-brand-text-primary mb-6">Content Calendar</h2>
                 <div className="bg-brand-container border border-brand-border rounded-2xl p-1 md:p-6 h-[70vh] text-brand-text-primary">
-                    <Calendar
-                        localizer={localizer}
-                        events={events}
-                        startAccessor="start"
-                        endAccessor="end"
-                        onSelectEvent={handleSelectEvent}
-                    />
+                    <Calendar localizer={localizer} events={events} startAccessor="start" endAccessor="end" onSelectEvent={handleSelectEvent} />
                 </div>
             </div>
         </>
     );
 };
 
+// --- Account View Component (NEW) ---
+const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
+    const [uploading, setUploading] = useState(false);
+    const [file, setFile] = useState(null);
+
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setFile(e.target.files[0]);
+        }
+    };
+
+    const handleCreateVoice = async () => {
+        if (!file) {
+            alert("Please select an audio file to upload.");
+            return;
+        }
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file, file.name);
+            formData.append('userId', session.user.id);
+
+            const response = await fetch('/.netlify/functions/create-voice', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || "Failed to create voice profile.");
+            }
+
+            const { voice_id } = await response.json();
+            
+            const { error: dbError } = await supabase.from('voice_profiles').upsert({
+                id: session.user.id,
+                voice_id: voice_id
+            });
+
+            if (dbError) throw dbError;
+
+            setVoiceProfile({ voice_id });
+            alert("Your voice profile has been created successfully!");
+
+        } catch (error) {
+            console.error("Error creating voice:", error);
+            alert(`Failed to create voice profile: ${error.message}`);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h2 className="text-3xl font-bold text-brand-text-primary mb-6">Account Settings</h2>
+            <div className="bg-brand-container border border-brand-border rounded-2xl p-8">
+                <div className="flex items-center gap-3 mb-4">
+                    <VoiceIcon />
+                    <h3 className="text-lg font-semibold text-brand-text-primary">Your Voice Profile</h3>
+                </div>
+                {voiceProfile?.voice_id ? (
+                    <div>
+                        <p className="text-brand-text-secondary">Your AI voice profile is active.</p>
+                        <p className="text-sm text-gray-400 mt-1">Voice ID: {voiceProfile.voice_id}</p>
+                    </div>
+                ) : (
+                    <div>
+                        <p className="text-brand-text-secondary mb-4">Create your unique AI voice by uploading a short audio sample (MP3, WAV). This allows you to generate audio previews in your own voice.</p>
+                        <input type="file" accept="audio/*" onChange={handleFileChange} className="mb-4 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-accent file:text-black hover:file:opacity-90" />
+                        <button onClick={handleCreateVoice} disabled={uploading || !file} className="bg-brand-accent hover:opacity-90 text-black font-bold py-2 px-4 rounded-lg disabled:opacity-50">
+                            {uploading ? 'Creating Voice...' : 'Create Voice Profile'}
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
 
 // --- Dashboard Component ---
-const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voiceProfile }) => {
+const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voiceProfile, setVoiceProfile }) => {
     const [activeView, setActiveView] = useState('dashboard');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -337,6 +322,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex">
                     <button onClick={() => setActiveView('dashboard')} className={`px-4 py-3 font-semibold ${activeView === 'dashboard' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Dashboard</button>
                     <button onClick={() => setActiveView('calendar')} className={`px-4 py-3 font-semibold ${activeView === 'calendar' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Content Calendar</button>
+                    <button onClick={() => setActiveView('account')} className={`px-4 py-3 font-semibold ${activeView === 'account' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Account</button>
                 </div>
             </nav>
 
@@ -424,6 +410,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
             )}
 
             {activeView === 'calendar' && <CalendarView session={session} voiceProfile={voiceProfile} />}
+            {activeView === 'account' && <AccountView session={session} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />}
         </>
     );
 };
@@ -565,7 +552,7 @@ const App = () => {
 
             <main>
                 {session ? (
-                    <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} />
+                    <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />
                 ) : (
                     <div className="text-center py-20 px-4">
                         <h1 className="text-5xl md:text-6xl font-extrabold text-brand-text-primary">Stop Guessing. Start Going Viral.</h1>
