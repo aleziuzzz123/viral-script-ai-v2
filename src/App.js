@@ -19,7 +19,7 @@ const ResultsDisplay = ({ content }) => {
     const copyToClipboard = (text, type) => {
         navigator.clipboard.writeText(text);
         setCopied(type);
-        setTimeout(() => setCopied(''), 2000); // Reset after 2 seconds
+        setTimeout(() => setCopied(''), 2000);
     };
 
     const getCategoryClass = (category) => {
@@ -226,11 +226,12 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal }) => 
 const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
     const [loading, setLoading] = useState(false);
 
+    // Using your REAL Price IDs
     const creditPacks = [
-        { name: 'Trial Pack', credits: 10, price: '$7', priceId: 'YOUR_TRIAL_PACK_PRICE_ID' },
-        { name: 'Creator Pack', credits: 50, price: '$27', priceId: 'YOUR_CREATOR_PACK_PRICE_ID' },
-        { name: 'Pro Pack', credits: '100 + 10 Bonus', price: '$47', priceId: 'YOUR_PRO_PACK_PRICE_ID', popular: true },
-        { name: 'Agency Pack', credits: '250 + 50 Bonus', price: '$97', priceId: 'YOUR_AGENCY_PACK_PRICE_ID' },
+        { name: 'Trial Pack', credits: 10, price: '$7', priceId: 'price_1RnqtMKucnJQ8ZaNjFzxoW85' },
+        { name: 'Creator Pack', credits: 50, price: '$27', priceId: 'price_1RnqtrKucnJQ8ZaNI5apjA4u' },
+        { name: 'Pro Pack', credits: '100 + 10 Bonus', price: '$47', priceId: 'price_1RnquFKucnJQ8ZaNR9Z6skUk', popular: true },
+        { name: 'Agency Pack', credits: '250 + 50 Bonus', price: '$97', priceId: 'price_1RnqucKucnJQ8ZaNt9SNptof' },
     ];
 
     const handlePurchase = async (priceId) => {
