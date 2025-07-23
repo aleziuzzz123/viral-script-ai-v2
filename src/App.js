@@ -5,15 +5,21 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import './App.css';
 
 // --- SVG Icons ---
-const CreditIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w.org/2000/svg" className="text-brand-text-secondary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12h2v4h-2v-4zm0 6h2v2h-2v-2z" fill="currentColor"/></svg>;
+const CreditIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12h2v4h-2v-4zm0 6h2v2h-2v-2z" fill="currentColor"/></svg>;
 const HistoryIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 0 1 7-7 7 7 0 0 1 7 7 7 7 0 0 1-7 7v2a9 9 0 0 0 9-9 9 9 0 0 0-9-9z" fill="currentColor"/><path d="M12 8v5l4.25 2.52.75-1.23-3.5-2.07V8z" fill="currentColor"/></svg>;
 const VisualsIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="currentColor"/></svg>;
 const AudioIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="currentColor"/></svg>;
 const HashtagIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M10.59 4.59C10.21 4.21 9.7 4 9.17 4H4c-1.1 0-2 .9-2 2v5.17c0 .53.21 1.04.59 1.41l8.83 8.83c.78.78 2.05.78 2.83 0l5.17-5.17c.78-.78.78-2.05 0-2.83l-8.83-8.83zM6.5 8C5.67 8 5 7.33 5 6.5S5.67 5 6.5 5 8 5.67 8 6.5 7.33 8 6.5 8z" fill="currentColor"/></svg>;
 
-// --- Results Component ---
+// --- Results Component with Upgraded UI ---
 const ResultsDisplay = ({ content }) => {
     const [activeTab, setActiveTab] = useState('hooks');
+
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        // You can add a toast notification here for better UX
+    };
+
     return (
         <div className="mt-8 bg-brand-container border border-brand-border rounded-2xl">
             <div className="border-b border-brand-border flex">
@@ -25,7 +31,7 @@ const ResultsDisplay = ({ content }) => {
                 {activeTab === 'hooks' && (
                     <div className="space-y-4">
                         {content.hooks.map((hook, index) => (
-                            <div key={index} className="bg-brand-background border border-brand-border rounded-lg p-4">
+                            <div key={index} className="bg-brand-background border border-brand-border rounded-lg p-4 group relative">
                                 <div className="flex justify-between items-start">
                                     <p className="text-brand-text-primary pr-4">{index + 1}. {hook.text}</p>
                                     <div className="text-center flex-shrink-0 ml-4">
@@ -34,13 +40,15 @@ const ResultsDisplay = ({ content }) => {
                                     </div>
                                 </div>
                                 <p className="text-sm text-brand-text-secondary mt-2 pl-6 opacity-75">{hook.analysis}</p>
+                                <button onClick={() => copyToClipboard(hook.text)} className="absolute top-2 right-2 bg-brand-border p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">Copy</button>
                             </div>
                         ))}
                     </div>
                 )}
                 {activeTab === 'script' && (
-                    <div className="bg-brand-background border border-brand-border rounded-lg p-6 whitespace-pre-line text-brand-text-secondary leading-relaxed">
+                    <div className="bg-brand-background border border-brand-border rounded-lg p-6 whitespace-pre-line text-brand-text-secondary leading-relaxed group relative">
                         {content.script}
+                        <button onClick={() => copyToClipboard(content.script)} className="absolute top-2 right-2 bg-brand-border p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">Copy Script</button>
                     </div>
                 )}
                 {activeTab === 'plan' && (
@@ -65,8 +73,9 @@ const ResultsDisplay = ({ content }) => {
                             <HashtagIcon />
                             <div>
                                 <h4 className="font-semibold text-brand-text-primary mb-2">Hashtag Strategy</h4>
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-2 group relative">
                                     {content.production_plan.hashtags.map((h, i) => <span key={i} className="bg-brand-background border border-brand-border text-brand-text-secondary text-sm font-medium px-3 py-1 rounded-full">{h}</span>)}
+                                    <button onClick={() => copyToClipboard(content.production_plan.hashtags.join(' '))} className="absolute top-0 right-0 bg-brand-border p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">Copy All</button>
                                 </div>
                             </div>
                         </div>
@@ -110,7 +119,7 @@ const Dashboard = ({ session, profile, setProfile }) => {
             const data = await response.json();
             setGeneratedContent(data);
             setWizardStep(1);
-        } catch (err) => {
+        } catch (err) {
             setError(err.message);
         } finally {
             setIsLoading(false);
