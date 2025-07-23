@@ -243,7 +243,13 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
 
             if (!response.ok) {
                 const errText = await response.text();
-                throw new Error(errText || "Failed to create voice profile.");
+                // Check if the error is JSON or plain text
+                try {
+                    const errJson = JSON.parse(errText);
+                    throw new Error(errJson.error || "Failed to create voice profile.");
+                } catch (e) {
+                    throw new Error(errText || "Failed to create voice profile.");
+                }
             }
 
             const { voice_id } = await response.json();
