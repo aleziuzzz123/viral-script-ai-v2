@@ -377,13 +377,18 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
         }
         setUploading(true);
         try {
-            const { error: apiError } = await fetch('/.netlify/functions/delete-voice', {
+            const response = await fetch('/.netlify/functions/delete-voice', {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ voiceId: voiceProfile.voice_id }),
             });
-            if (apiError) throw new Error("Failed to delete voice from service.");
+            if (!response.ok) {
+                 throw new Error("Failed to delete voice from service.");
+            }
+
             const { error: dbError } = await supabase.from('voice_profiles').delete().eq('id', session.user.id);
             if (dbError) throw dbError;
+
             setVoiceProfile(null);
             addToast("Your voice profile has been deleted.", 'success');
         } catch (error) {
@@ -432,7 +437,6 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
 const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voiceProfile, setVoiceProfile }) => {
     const [activeView, setActiveView] = useState('dashboard');
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
     const [generatedContent, setGeneratedContent] = useState(null);
     const [wizardStep, setWizardStep] = useState(1);
     const [topic, setTopic] = useState('');
@@ -461,7 +465,6 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
         if (wizardStep === 1) { setWizardStep(2); return; }
 
         setIsLoading(true);
-        setError('');
         setGeneratedContent(null);
         try {
             const { error: updateError } = await supabase.from('profiles').update({ credits: profile.credits - 1 }).eq('id', session.user.id);
