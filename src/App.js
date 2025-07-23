@@ -221,17 +221,19 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
         setUploading(true);
         try {
             const formData = new FormData();
-            formData.append('file', audioBlob, 'voice_sample.wav');
-            formData.append('userId', session.user.id);
+            formData.append('files', audioBlob, 'voice_sample.wav');
+            formData.append('name', `User_${session.user.id}`);
 
+            // NOTE: The fetch request for multipart/form-data should NOT have a 'Content-Type' header.
+            // The browser will set it automatically with the correct boundary.
             const response = await fetch('/.netlify/functions/create-voice', {
                 method: 'POST',
                 body: formData,
             });
 
             if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.error || "Failed to create voice profile.");
+                const errText = await response.text();
+                throw new Error(errText || "Failed to create voice profile.");
             }
 
             const { voice_id } = await response.json();
@@ -614,4 +616,3 @@ const App = () => {
 };
 
 export default App;
-
