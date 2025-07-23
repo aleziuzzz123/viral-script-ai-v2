@@ -1,7 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
-// IMPORTANT: Replace with your actual Supabase Project URL and Anon Key
-const supabaseUrl = 'https://ntjeneyztmkpezulrrua.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50amVuZXl6dG1rcGV6dWxycnVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMTE4OTIsImV4cCI6MjA2ODc4Nzg5Mn0.CdKZkl7KTgaCAsCyNH3vRvuUT7KmL9ccz_8rXdtDX4U'
+// These special variables are read from your Netlify settings
+// They MUST start with REACT_APP_ to work in a React app
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Supabase URL and Anon Key are required environment variables.");
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
