@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, createContext, useContext } from 'react';
 import { supabase } from './supabaseClient';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
@@ -7,12 +7,39 @@ import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
+import enUS from 'date-fns/locale/en-US'; // --- FIX: Correct import for date-fns locale ---
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './App.css';
 
-// --- Localizer for the Calendar ---
-const locales = { 'en-US': require('date-fns/locale/en-US') };
+// --- Localizer for the Calendar (FIXED) ---
+const locales = { 'en-US': enUS };
 const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
+
+// --- Toast Notification System (NEW) ---
+const ToastContext = createContext();
+const ToastProvider = ({ children }) => {
+    const [toasts, setToasts] = useState([]);
+    const addToast = (message, type = 'success') => {
+        const id = Math.random().toString(36).substr(2, 9);
+        setToasts(prev => [...prev, { id, message, type }]);
+        setTimeout(() => {
+            setToasts(prev => prev.filter(toast => toast.id !== id));
+        }, 3000);
+    };
+    return (
+        <ToastContext.Provider value={{ addToast }}>
+            {children}
+            <div className="fixed top-5 right-5 z-[100] space-y-2">
+                {toasts.map(toast => (
+                    <div key={toast.id} className={`px-4 py-2 rounded-md text-white shadow-lg ${toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+                        {toast.message}
+                    </div>
+                ))}
+            </div>
+        </ToastContext.Provider>
+    );
+};
+const useToast = () => useContext(ToastContext);
 
 // --- SVG Icons ---
 const CreditIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12h2v4h-2v-4zm0 6h2v2h-2v-2z" fill="currentColor"/></svg>;
@@ -23,6 +50,99 @@ const HashtagIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="
 const PlayIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>;
 const LoadingSpinner = () => <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>;
 const VoiceIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z" fill="currentColor"></path></svg>;
+
+// --- Components for the New Homepage ---
+const FeatureCard = ({ icon, title, children }) => (
+    <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+        <div className="text-brand-accent mb-3">{icon}</div>
+        <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
+        <p className="text-brand-text-secondary">{children}</p>
+    </div>
+);
+const TestimonialCard = ({ quote, name, title }) => (
+    <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+        <div className="flex text-yellow-400 mb-4">★★★★★</div>
+        <p className="text-white italic mb-4">"{quote}"</p>
+        <div>
+            <p className="font-bold text-white">{name}</p>
+            <p className="text-brand-text-secondary">{title}</p>
+        </div>
+    </div>
+);
+
+// --- New Homepage Component ---
+const HomePage = ({ setShowAuthModal }) => {
+    return (
+        <div className="w-full">
+            {/* Hero Section */}
+            <section className="text-center py-20 md:py-32 px-4">
+                <h1 className="text-5xl md:text-7xl font-extrabold text-white">Stop Guessing. Start Going Viral.</h1>
+                <p className="text-xl text-brand-text-secondary max-w-3xl mx-auto mt-6 mb-10">Generate complete viral video blueprints—from hooks and scripts to production notes and hashtags—in seconds with our advanced AI strategist.</p>
+                <button onClick={() => setShowAuthModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Generate Your First Blueprint Free</button>
+            </section>
+
+            {/* How It Works Section */}
+            <section className="py-20 px-4">
+                <h2 className="text-4xl font-bold text-center text-white mb-12">How It Works</h2>
+                <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8 text-center">
+                    <div>
+                        <div className="text-5xl mb-4">1️⃣</div>
+                        <h3 className="text-2xl font-bold text-white mb-2">Enter Your Topic</h3>
+                        <p className="text-brand-text-secondary">Give our AI any idea, topic, or keyword.</p>
+                    </div>
+                    <div>
+                        <div className="text-5xl mb-4">2️⃣</div>
+                        <h3 className="text-2xl font-bold text-white mb-2">Generate Your Blueprint</h3>
+                        <p className="text-brand-text-secondary">Receive a complete plan, including hooks, a full script, and production notes.</p>
+                    </div>
+                    <div>
+                        <div className="text-5xl mb-4">3️⃣</div>
+                        <h3 className="text-2xl font-bold text-white mb-2">Create & Post</h3>
+                        <p className="text-brand-text-secondary">Use the blueprint to create high-impact content and watch your audience grow.</p>
+                    </div>
+                </div>
+            </section>
+
+            {/* Features Showcase Section */}
+            <section className="py-20 px-4 bg-white/5">
+                <h2 className="text-4xl font-bold text-center text-white mb-12">A Feature for Every Step</h2>
+                <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
+                    <FeatureCard icon={<HistoryIcon />} title="AI-Scored Hooks">Don't just get hooks, get hooks scored by our AI for viral potential.</FeatureCard>
+                    <FeatureCard icon={<VoiceIcon />} title="The Director's Cut">Hear your script in your own voice with AI-powered audio previews.</FeatureCard>
+                    <FeatureCard icon={<Calendar />} title="Content Calendar">Track your past ideas and plan your future content with ease.</FeatureCard>
+                    <FeatureCard icon={<VisualsIcon />} title="Full Production Plan">Get shot-by-shot visual ideas, audio suggestions, and a curated hashtag strategy.</FeatureCard>
+                </div>
+            </section>
+
+            {/* Testimonials Section */}
+            <section className="py-20 px-4">
+                <h2 className="text-4xl font-bold text-center text-white mb-12">Loved by Creators Everywhere</h2>
+                <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
+                    <TestimonialCard quote="Viral Script AI has saved me hours of brainstorming every week. The 'Director's Cut' feature is a game-changer for my workflow!" name="Sarah L." title="TikTok Creator" />
+                    <TestimonialCard quote="The AI-scored hooks are incredibly accurate. My engagement has gone through the roof since I started using this tool." name="Mike P." title="YouTube Shorts Specialist" />
+                </div>
+            </section>
+
+            {/* Final CTA Section */}
+            <section className="py-20 px-4 text-center">
+                 <h2 className="text-4xl font-bold text-white mb-6">Ready to Go Viral?</h2>
+                 <button onClick={() => setShowAuthModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Get Started for Free</button>
+            </section>
+        </div>
+    );
+};
+
+// --- Loading Skeleton Component (NEW) ---
+const SkeletonLoader = () => (
+    <div className="mt-8 bg-brand-container border border-brand-border rounded-2xl p-6 space-y-4 animate-pulse">
+        <div className="h-8 bg-gray-700 rounded w-1/3"></div>
+        <div className="space-y-4">
+            <div className="h-24 bg-gray-700 rounded"></div>
+            <div className="h-24 bg-gray-700 rounded"></div>
+            <div className="h-24 bg-gray-700 rounded"></div>
+        </div>
+    </div>
+);
 
 // --- Blueprint Detail Modal ---
 const BlueprintDetailModal = ({ blueprint, closeModal, session, voiceProfile }) => {
@@ -44,6 +164,7 @@ const BlueprintDetailModal = ({ blueprint, closeModal, session, voiceProfile }) 
 const ScheduleModal = ({ blueprint, session, setShow, onScheduled }) => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [saving, setSaving] = useState(false);
+    const { addToast } = useToast();
     const handleSave = async () => {
         setSaving(true);
         const { error } = await supabase.from('scheduled_posts').insert({
@@ -53,8 +174,9 @@ const ScheduleModal = ({ blueprint, session, setShow, onScheduled }) => {
             blueprint: blueprint,
         });
         if (error) {
-            alert('Error scheduling post: ' + error.message);
+            addToast('Error scheduling post: ' + error.message, 'error');
         } else {
+            addToast('Post scheduled successfully!', 'success');
             setShow(false);
             onScheduled();
         }
@@ -67,13 +189,13 @@ const ScheduleModal = ({ blueprint, session, setShow, onScheduled }) => {
 const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
     const [activeTab, setActiveTab] = useState('hooks');
     const [showScheduleModal, setShowScheduleModal] = useState(false);
-    const [copied, setCopied] = useState('');
+    const { addToast } = useToast();
     const [audioLoading, setAudioLoading] = useState(false);
     const [audioSrc, setAudioSrc] = useState(null);
 
     const handleGenerateAudio = async () => {
         if (!voiceProfile?.voice_id) {
-            alert("Please set up your voice profile first in the Account settings.");
+            addToast("Please set up your voice profile first in Account settings.", 'error');
             return;
         }
         setAudioLoading(true);
@@ -90,17 +212,15 @@ const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
             const audioUrl = `data:audio/mpeg;base64,${audioData}`;
             setAudioSrc(audioUrl);
         } catch (error) {
-            console.error("Audio generation error:", error);
-            alert("Sorry, we couldn't generate the audio preview.");
+            addToast("Sorry, we couldn't generate the audio preview.", 'error');
         } finally {
             setAudioLoading(false);
         }
     };
 
-    const copyToClipboard = (text, type) => {
+    const copyToClipboard = (text) => {
         navigator.clipboard.writeText(text);
-        setCopied(type);
-        setTimeout(() => setCopied(''), 2000);
+        addToast('Copied to clipboard!', 'success');
     };
 
     const getCategoryClass = (category) => {
@@ -116,8 +236,8 @@ const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
     return (
         <>
             {showScheduleModal && <ScheduleModal blueprint={content} session={session} setShow={setShowScheduleModal} onScheduled={onScheduled} />}
-            <div className="mt-8 bg-brand-container border border-brand-border rounded-2xl">
-                <div className="flex justify-between items-center pr-4 border-b border-brand-border">
+            <div className="mt-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
+                <div className="flex justify-between items-center pr-4 border-b border-white/10">
                     <div className="flex">
                         <button onClick={() => setActiveTab('hooks')} className={`px-4 py-3 font-semibold ${activeTab === 'hooks' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Hooks & Scores</button>
                         <button onClick={() => setActiveTab('script')} className={`px-4 py-3 font-semibold ${activeTab === 'script' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Full Script</button>
@@ -126,9 +246,9 @@ const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
                     {onScheduled && <button onClick={() => setShowScheduleModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-2 px-4 rounded-lg text-sm">Schedule</button>}
                 </div>
                 <div className="p-6">
-                    {activeTab === 'hooks' && (<div className="space-y-4">{content.hooks.map((hook, index) => (<div key={index} className="bg-brand-background border border-brand-border rounded-lg p-4 group relative"><div className="flex justify-between items-start mb-2"><span className={`text-xs font-semibold px-2 py-1 rounded-full ${getCategoryClass(hook.category)}`}>{hook.category}</span><div className="text-center flex-shrink-0 ml-4"><p className="font-bold text-2xl text-brand-accent">{hook.score}</p><p className="text-xs text-brand-text-secondary">Viral Score</p></div></div><p className="text-brand-text-primary pr-12">{hook.text}</p><p className="text-sm text-brand-text-secondary mt-2 italic opacity-75">"{hook.analysis}"</p><button onClick={() => copyToClipboard(hook.text, `hook-${index}`)} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">{copied === `hook-${index}` ? 'Copied!' : 'Copy'}</button></div>))}</div>)}
-                    {activeTab === 'script' && (<div className="bg-brand-background border border-brand-border rounded-lg p-6 whitespace-pre-line text-brand-text-secondary leading-relaxed group relative">{content.script}<div className="mt-6 pt-4 border-t border-brand-border"><button onClick={handleGenerateAudio} disabled={audioLoading} className="flex items-center gap-2 bg-brand-accent text-black font-bold py-2 px-4 rounded-lg">{audioLoading ? <LoadingSpinner /> : <PlayIcon />} {audioLoading ? 'Generating Audio...' : "Hear Director's Cut"}</button>{audioSrc && <audio controls src={audioSrc} className="w-full mt-4" />}</div><button onClick={() => copyToClipboard(content.script, 'script')} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">{copied === 'script' ? 'Copied!' : 'Copy Script'}</button></div>)}
-                    {activeTab === 'plan' && (<div className="space-y-6"><div className="flex items-start gap-4"><VisualsIcon /><div><h4 className="font-semibold text-brand-text-primary mb-2">Visual Ideas</h4><ul className="list-disc list-inside space-y-1 text-brand-text-secondary">{content.production_plan.visuals.map((v, i) => <li key={i}>{v}</li>)}</ul></div></div><div className="flex items-start gap-4"><AudioIcon /><div><h4 className="font-semibold text-brand-text-primary mb-2">Audio Suggestion</h4><p className="text-brand-text-secondary">{content.production_plan.audio}</p></div></div><div className="flex items-start gap-4"><HashtagIcon /><div><h4 className="font-semibold text-brand-text-primary mb-2">Hashtag Strategy</h4><div className="flex flex-wrap gap-2 group relative">{content.production_plan.hashtags.map((h, i) => <span key={i} className="bg-brand-background border border-brand-border text-brand-text-secondary text-sm font-medium px-3 py-1 rounded-full">{h}</span>)}<button onClick={() => copyToClipboard(content.production_plan.hashtags.join(' '), 'hashtags')} className="absolute -top-2 -right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">{copied === 'hashtags' ? 'Copied!' : 'Copy All'}</button></div></div></div></div>)}
+                    {activeTab === 'hooks' && (<div className="space-y-4">{content.hooks.map((hook, index) => (<div key={index} className="bg-brand-background border border-brand-border rounded-lg p-4 group relative"><div className="flex justify-between items-start mb-2"><span className={`text-xs font-semibold px-2 py-1 rounded-full ${getCategoryClass(hook.category)}`}>{hook.category}</span><div className="text-center flex-shrink-0 ml-4"><p className="font-bold text-2xl text-brand-accent">{hook.score}</p><p className="text-xs text-brand-text-secondary">Viral Score</p></div></div><p className="text-brand-text-primary pr-12">{hook.text}</p><p className="text-sm text-brand-text-secondary mt-2 italic opacity-75">"{hook.analysis}"</p><button onClick={() => copyToClipboard(hook.text)} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">Copy</button></div>))}</div>)}
+                    {activeTab === 'script' && (<div className="bg-brand-background border border-brand-border rounded-lg p-6 whitespace-pre-line text-brand-text-secondary leading-relaxed group relative">{content.script}<div className="mt-6 pt-4 border-t border-brand-border"><button onClick={handleGenerateAudio} disabled={audioLoading} className="flex items-center gap-2 bg-brand-accent text-black font-bold py-2 px-4 rounded-lg">{audioLoading ? <LoadingSpinner /> : <PlayIcon />} {audioLoading ? 'Generating Audio...' : "Hear Director's Cut"}</button>{audioSrc && <audio controls src={audioSrc} className="w-full mt-4" />}</div><button onClick={() => copyToClipboard(content.script)} className="absolute top-2 right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">Copy Script</button></div>)}
+                    {activeTab === 'plan' && (<div className="space-y-6"><div className="flex items-start gap-4"><VisualsIcon /><div><h4 className="font-semibold text-brand-text-primary mb-2">Visual Ideas</h4><ul className="list-disc list-inside space-y-1 text-brand-text-secondary">{content.production_plan.visuals.map((v, i) => <li key={i}>{v}</li>)}</ul></div></div><div className="flex items-start gap-4"><AudioIcon /><div><h4 className="font-semibold text-brand-text-primary mb-2">Audio Suggestion</h4><p className="text-brand-text-secondary">{content.production_plan.audio}</p></div></div><div className="flex items-start gap-4"><HashtagIcon /><div><h4 className="font-semibold text-brand-text-primary mb-2">Hashtag Strategy</h4><div className="flex flex-wrap gap-2 group relative">{content.production_plan.hashtags.map((h, i) => <span key={i} className="bg-brand-background border border-brand-border text-brand-text-secondary text-sm font-medium px-3 py-1 rounded-full">{h}</span>)}<button onClick={() => copyToClipboard(content.production_plan.hashtags.join(' '))} className="absolute -top-2 -right-2 bg-brand-border text-xs py-1 px-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">Copy All</button></div></div></div></div>)}
                 </div>
             </div>
         </>
@@ -165,7 +285,7 @@ const CalendarView = ({ session, voiceProfile }) => {
             {selectedEvent && <BlueprintDetailModal blueprint={selectedEvent} closeModal={() => setSelectedEvent(null)} session={session} voiceProfile={voiceProfile} />}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <h2 className="text-3xl font-bold text-brand-text-primary mb-6">Content Calendar</h2>
-                <div className="bg-brand-container border border-brand-border rounded-2xl p-1 md:p-6 h-[70vh] text-brand-text-primary">
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-1 md:p-6 h-[70vh] text-brand-text-primary">
                     <Calendar localizer={localizer} events={events} startAccessor="start" endAccessor="end" onSelectEvent={handleSelectEvent} />
                 </div>
             </div>
@@ -173,7 +293,8 @@ const CalendarView = ({ session, voiceProfile }) => {
     );
 };
 
-// --- Account View Component (UPDATED with Delete Functionality) ---
+
+// --- Account View Component ---
 const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
     const [uploading, setUploading] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
@@ -183,6 +304,7 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
     const [uploadMode, setUploadMode] = useState('record');
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
+    const { addToast } = useToast();
 
     const handleStartRecording = async () => {
         try {
@@ -201,7 +323,7 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
             mediaRecorderRef.current.start();
             setIsRecording(true);
         } catch (err) {
-            alert("Could not access microphone. Please check your browser permissions.");
+            addToast("Could not access microphone. Please check your browser permissions.", 'error');
         }
     };
 
@@ -225,7 +347,7 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
         const audioData = audioBlob || file;
         const audioName = audioBlob ? 'voice_sample.webm' : file.name;
         if (!audioData) {
-            alert("Please record or upload an audio sample first.");
+            addToast("Please record or upload an audio sample first.", 'error');
             return;
         }
         setUploading(true);
@@ -242,9 +364,9 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
             const { error: dbError } = await supabase.from('voice_profiles').upsert({ id: session.user.id, voice_id: voice_id });
             if (dbError) throw dbError;
             setVoiceProfile({ voice_id });
-            alert("Your voice profile has been created successfully!");
+            addToast("Your voice profile has been created successfully!", 'success');
         } catch (error) {
-            alert(`Failed to create voice profile: ${error.message}`);
+            addToast(`Failed to create voice profile: ${error.message}`, 'error');
         } finally {
             setUploading(false);
         }
@@ -256,19 +378,22 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
         }
         setUploading(true);
         try {
-            const { error: apiError } = await fetch('/.netlify/functions/delete-voice', {
+            const response = await fetch('/.netlify/functions/delete-voice', {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ voiceId: voiceProfile.voice_id }),
             });
-            if (apiError) throw new Error("Failed to delete voice from service.");
+            if (!response.ok) {
+                 throw new Error("Failed to delete voice from service.");
+            }
 
             const { error: dbError } = await supabase.from('voice_profiles').delete().eq('id', session.user.id);
             if (dbError) throw dbError;
 
             setVoiceProfile(null);
-            alert("Your voice profile has been deleted.");
+            addToast("Your voice profile has been deleted.", 'success');
         } catch (error) {
-            alert(`Failed to delete voice profile: ${error.message}`);
+            addToast(`Failed to delete voice profile: ${error.message}`, 'error');
         } finally {
             setUploading(false);
         }
@@ -277,7 +402,7 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <h2 className="text-3xl font-bold text-brand-text-primary mb-6">Account Settings</h2>
-            <div className="bg-brand-container border border-brand-border rounded-2xl p-8">
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
                 <div className="flex items-center gap-3 mb-4">
                     <VoiceIcon />
                     <h3 className="text-lg font-semibold text-brand-text-primary">Your Voice Profile</h3>
@@ -313,7 +438,6 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
 const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voiceProfile, setVoiceProfile }) => {
     const [activeView, setActiveView] = useState('dashboard');
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
     const [generatedContent, setGeneratedContent] = useState(null);
     const [wizardStep, setWizardStep] = useState(1);
     const [topic, setTopic] = useState('');
@@ -322,6 +446,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
     const [audience, setAudience] = useState('');
     const [generationHistory, setGenerationHistory] = useState([]);
     const [historyLoading, setHistoryLoading] = useState(true);
+    const { addToast } = useToast();
 
     const fetchHistory = useCallback(async () => {
         if (!session?.user) return;
@@ -337,11 +462,10 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
 
     const handleGenerate = useCallback(async () => {
         if (!profile || profile.credits < 1) { setShowBuyCreditsModal(true); return; }
-        if (!topic) { setError('Please enter a topic.'); return; }
+        if (!topic) { addToast('Please enter a topic.', 'error'); return; }
         if (wizardStep === 1) { setWizardStep(2); return; }
 
         setIsLoading(true);
-        setError('');
         setGeneratedContent(null);
         try {
             const { error: updateError } = await supabase.from('profiles').update({ credits: profile.credits - 1 }).eq('id', session.user.id);
@@ -367,15 +491,15 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
             fetchHistory();
             setWizardStep(1);
         } catch (err) {
-            setError(err.message);
+            addToast(err.message, 'error');
         } finally {
             setIsLoading(false);
         }
-    }, [topic, goal, tone, audience, profile, session, setProfile, wizardStep, setShowBuyCreditsModal, fetchHistory]);
+    }, [topic, goal, tone, audience, profile, session, setProfile, wizardStep, setShowBuyCreditsModal, fetchHistory, addToast]);
 
     return (
         <>
-            <nav className="border-b border-brand-border bg-brand-container">
+            <nav className="border-b border-white/10 bg-white/5 backdrop-blur-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex">
                     <button onClick={() => setActiveView('dashboard')} className={`px-4 py-3 font-semibold ${activeView === 'dashboard' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Dashboard</button>
                     <button onClick={() => setActiveView('calendar')} className={`px-4 py-3 font-semibold ${activeView === 'calendar' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Content Calendar</button>
@@ -387,8 +511,8 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2 space-y-8">
-                            <div className="bg-brand-container border border-brand-border rounded-2xl p-8">
-                                <h2 className="text-3xl font-bold text-brand-text-primary">Dashboard</h2>
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+                                <h2 className="text-3xl font-bold text-brand-text-primary">Welcome back, {session.user.email.split('@')[0]}!</h2>
                                 <p className="text-brand-text-secondary mt-2 mb-6">Let's create your next viral hit.</p>
                                 
                                 {wizardStep === 1 && (
@@ -431,12 +555,12 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
                                         </button>
                                     </div>
                                 )}
-                                {error && <p className="text-red-400 text-center mt-4">{error}</p>}
                             </div>
+                            {isLoading && <SkeletonLoader />}
                             {generatedContent && <ResultsDisplay content={generatedContent} session={session} onScheduled={fetchHistory} voiceProfile={voiceProfile} />}
                         </div>
                         <div className="lg:col-span-1 space-y-8">
-                            <div className="bg-brand-container border border-brand-border rounded-2xl p-6">
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
                                 <div className="flex items-center gap-3 mb-4">
                                     <CreditIcon />
                                     <h3 className="text-lg font-semibold text-brand-text-primary">Credit Balance</h3>
@@ -444,7 +568,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
                                 <p className="text-5xl font-bold text-brand-accent">{profile ? profile.credits : '0'}</p>
                                 <button onClick={() => setShowBuyCreditsModal(true)} className="w-full mt-4 bg-brand-accent hover:opacity-90 text-black font-bold py-3 rounded-lg">Buy More Credits</button>
                             </div>
-                            <div className="bg-brand-container border border-brand-border rounded-2xl p-6">
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
                                 <div className="flex items-center gap-3 mb-4">
                                     <HistoryIcon />
                                     <h3 className="text-lg font-semibold text-brand-text-primary">Recent Activity</h3>
@@ -475,6 +599,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
 // --- Buy Credits Modal ---
 const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
     const [loading, setLoading] = useState(false);
+    const { addToast } = useToast();
     const creditPacks = [
         { name: 'Trial Pack', credits: 10, price: '$7', priceId: 'price_1RnqtMKucnJQ8ZaNjFzxoW85' },
         { name: 'Creator Pack', credits: 50, price: '$27', priceId: 'price_1RnqtrKucnJQ8ZaNI5apjA4u' },
@@ -495,8 +620,7 @@ const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
             }
             window.location.href = responseBody.url;
         } catch (error) {
-            console.error("Stripe Checkout Error:", error.message);
-            alert(`An error occurred: ${error.message}`);
+            addToast(`An error occurred: ${error.message}`, 'error');
             setLoading(false);
         }
     };
@@ -533,7 +657,6 @@ const App = () => {
     const [profileLoading, setProfileLoading] = useState(true);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
-    const [topic, setTopic] = useState('');
 
     useEffect(() => {
         setProfileLoading(true);
@@ -573,57 +696,45 @@ const App = () => {
         }
     }, [session]);
 
-    const handleGuestGenerate = () => {
-        if (!topic) { alert("Please enter a topic to start."); return; }
-        setShowAuthModal(true);
-    }
-
     return (
-        <div className="bg-brand-background text-brand-text-secondary min-h-screen font-sans">
-            {showAuthModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-brand-container border border-brand-border rounded-2xl p-8 max-w-md w-full relative">
-                        <button onClick={() => setShowAuthModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button>
-                        <h3 className="text-2xl font-bold text-center text-brand-text-primary mb-2">Your Blueprint is Ready!</h3>
-                        <p className="text-brand-text-secondary text-center mb-6">Create a free account to view it.</p>
-                        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google']} theme="dark" />
-                    </div>
-                </div>
-            )}
-            
-            {showBuyCreditsModal && <BuyCreditsModal setShowBuyCreditsModal={setShowBuyCreditsModal} session={session} />}
-
-            <header className="border-b border-brand-border">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-brand-text-primary">Viral Script AI</h1>
-                    {session ? (
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm text-brand-text-secondary">Credits: <span className="font-bold text-brand-text-primary">{profileLoading ? '...' : (profile ? profile.credits : 0)}</span></span>
-                            <button onClick={async () => await supabase.auth.signOut()} className="bg-brand-container hover:bg-gray-700 text-brand-text-primary font-semibold py-2 px-4 rounded-lg text-sm border border-brand-border">Logout</button>
-                        </div>
-                    ) : (
-                        <button onClick={() => setShowAuthModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-2 px-4 rounded-lg">Login / Sign Up</button>
-                    )}
-                </div>
-            </header>
-
-            <main>
-                {session ? (
-                    <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />
-                ) : (
-                    <div className="text-center py-20 px-4">
-                        <h1 className="text-5xl md:text-6xl font-extrabold text-brand-text-primary">Stop Guessing. Start Going Viral.</h1>
-                        <p className="text-xl text-brand-text-secondary max-w-3xl mx-auto mt-6 mb-10">Generate a complete viral video blueprint—from hooks to hashtags—in seconds.</p>
-                        <div className="max-w-2xl mx-auto">
-                           <div className="flex flex-col sm:flex-row gap-2">
-                                <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Enter a topic to get started..." className="w-full bg-brand-container border border-brand-border rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-brand-accent" />
-                                <button onClick={handleGuestGenerate} className="bg-brand-accent hover:opacity-90 text-black font-bold py-3 px-6 rounded-lg whitespace-nowrap">Generate Free Blueprint</button>
-                            </div>
+        <ToastProvider>
+            <div className="bg-brand-background text-brand-text-secondary min-h-screen font-sans">
+                {showAuthModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="bg-brand-container border border-brand-border rounded-2xl p-8 max-w-md w-full relative">
+                            <button onClick={() => setShowAuthModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button>
+                            <h3 className="text-2xl font-bold text-center text-brand-text-primary mb-2">Your Blueprint is Ready!</h3>
+                            <p className="text-brand-text-secondary text-center mb-6">Create a free account to view it.</p>
+                            <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google']} theme="dark" />
                         </div>
                     </div>
                 )}
-            </main>
-        </div>
+                
+                {showBuyCreditsModal && <BuyCreditsModal setShowBuyCreditsModal={setShowBuyCreditsModal} session={session} />}
+
+                <header className="border-b border-white/10 sticky top-0 bg-brand-background/80 backdrop-blur-lg z-50">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                        <h1 className="text-2xl font-bold text-brand-text-primary">Viral Script AI</h1>
+                        {session ? (
+                            <div className="flex items-center gap-4">
+                                <span className="text-sm text-brand-text-secondary">Credits: <span className="font-bold text-brand-text-primary">{profileLoading ? '...' : (profile ? profile.credits : 0)}</span></span>
+                                <button onClick={async () => await supabase.auth.signOut()} className="bg-brand-container hover:bg-gray-700 text-brand-text-primary font-semibold py-2 px-4 rounded-lg text-sm border border-brand-border">Logout</button>
+                            </div>
+                        ) : (
+                            <button onClick={() => setShowAuthModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-2 px-4 rounded-lg">Login / Sign Up</button>
+                        )}
+                    </div>
+                </header>
+
+                <main>
+                    {session ? (
+                        <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />
+                    ) : (
+                        <HomePage setShowAuthModal={setShowAuthModal} />
+                    )}
+                </main>
+            </div>
+        </ToastProvider>
     );
 };
 
