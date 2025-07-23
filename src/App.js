@@ -63,7 +63,7 @@ const ScheduleModal = ({ blueprint, session, setShow, onScheduled }) => {
     return ( <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4"><div className="bg-brand-container border border-brand-border rounded-2xl p-8 max-w-md w-full relative"><button onClick={() => setShow(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button><h3 className="text-2xl font-bold text-center text-brand-text-primary mb-4">Schedule Blueprint</h3><p className="text-brand-text-secondary text-center mb-6">Choose a date to add this to your content calendar.</p><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3" /><button onClick={handleSave} disabled={saving} className="w-full mt-4 bg-brand-accent hover:opacity-90 text-black font-bold py-3 rounded-lg">{saving ? 'Saving...' : 'Add to Calendar'}</button></div></div>);
 };
 
-// --- Results Component (FIXED) ---
+// --- Results Component ---
 const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
     const [activeTab, setActiveTab] = useState('hooks');
     const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -79,10 +79,7 @@ const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
         setAudioLoading(true);
         setAudioSrc(null);
         try {
-            // --- THE FIX IS HERE ---
-            // We clean the script to remove parenthetical notes before sending it to the API.
             const cleanText = content.script.replace(/\s?\(.*\)\s?/g, ' ');
-
             const response = await fetch('/.netlify/functions/generate-audio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -176,14 +173,14 @@ const CalendarView = ({ session, voiceProfile }) => {
     );
 };
 
-// --- Account View Component ---
+// --- Account View Component (UPDATED with Delete Functionality) ---
 const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
     const [uploading, setUploading] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [audioBlob, setAudioBlob] = useState(null);
     const [audioUrl, setAudioUrl] = useState(null);
     const [file, setFile] = useState(null);
-    const [uploadMode, setUploadMode] = useState('record'); // 'record' or 'upload'
+    const [uploadMode, setUploadMode] = useState('record');
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
 
@@ -191,28 +188,19 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             const options = { mimeType: 'audio/webm; codecs=opus' };
-            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                 console.log(`${options.mimeType} is not supported, trying default.`);
-                 mediaRecorderRef.current = new MediaRecorder(stream);
-            } else {
-                 mediaRecorderRef.current = new MediaRecorder(stream, options);
-            }
-            
+            mediaRecorderRef.current = MediaRecorder.isTypeSupported(options.mimeType) ? new MediaRecorder(stream, options) : new MediaRecorder(stream);
             audioChunksRef.current = [];
-            mediaRecorderRef.current.ondataavailable = (event) => {
-                audioChunksRef.current.push(event.data);
-            };
+            mediaRecorderRef.current.ondataavailable = (event) => audioChunksRef.current.push(event.data);
             mediaRecorderRef.current.onstop = () => {
                 const blob = new Blob(audioChunksRef.current, { type: options.mimeType });
                 const url = URL.createObjectURL(blob);
                 setAudioBlob(blob);
                 setAudioUrl(url);
-                setFile(null); // Clear file if recording is made
+                setFile(null);
             };
             mediaRecorderRef.current.start();
             setIsRecording(true);
         } catch (err) {
-            console.error("Error accessing microphone:", err);
             alert("Could not access microphone. Please check your browser permissions.");
         }
     };
@@ -228,7 +216,7 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
         if (e.target.files && e.target.files.length > 0) {
             const selectedFile = e.target.files[0];
             setFile(selectedFile);
-            setAudioBlob(null); // Clear recording if file is selected
+            setAudioBlob(null);
             setAudioUrl(URL.createObjectURL(selectedFile));
         }
     };
@@ -236,7 +224,6 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
     const handleCreateVoice = async () => {
         const audioData = audioBlob || file;
         const audioName = audioBlob ? 'voice_sample.webm' : file.name;
-
         if (!audioData) {
             alert("Please record or upload an audio sample first.");
             return;
@@ -246,37 +233,42 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
             const formData = new FormData();
             formData.append('files', audioData, audioName);
             formData.append('name', `User_${session.user.id}`);
-
-            const response = await fetch('/.netlify/functions/create-voice', {
-                method: 'POST',
-                body: formData,
-            });
-
+            const response = await fetch('/.netlify/functions/create-voice', { method: 'POST', body: formData });
             if (!response.ok) {
                 const errText = await response.text();
-                try {
-                    const errJson = JSON.parse(errText);
-                    throw new Error(errJson.error || "Failed to create voice profile.");
-                } catch (e) {
-                    throw new Error(errText || "Failed to create voice profile.");
-                }
+                throw new Error(errText || "Failed to create voice profile.");
             }
-
             const { voice_id } = await response.json();
-            
-            const { error: dbError } = await supabase.from('voice_profiles').upsert({
-                id: session.user.id,
-                voice_id: voice_id
-            });
-
+            const { error: dbError } = await supabase.from('voice_profiles').upsert({ id: session.user.id, voice_id: voice_id });
             if (dbError) throw dbError;
-
             setVoiceProfile({ voice_id });
             alert("Your voice profile has been created successfully!");
-
         } catch (error) {
-            console.error("Error creating voice:", error);
             alert(`Failed to create voice profile: ${error.message}`);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleDeleteVoice = async () => {
+        if (!window.confirm("Are you sure you want to delete your voice profile? This action cannot be undone.")) {
+            return;
+        }
+        setUploading(true);
+        try {
+            const { error: apiError } = await fetch('/.netlify/functions/delete-voice', {
+                method: 'POST',
+                body: JSON.stringify({ voiceId: voiceProfile.voice_id }),
+            });
+            if (apiError) throw new Error("Failed to delete voice from service.");
+
+            const { error: dbError } = await supabase.from('voice_profiles').delete().eq('id', session.user.id);
+            if (dbError) throw dbError;
+
+            setVoiceProfile(null);
+            alert("Your voice profile has been deleted.");
+        } catch (error) {
+            alert(`Failed to delete voice profile: ${error.message}`);
         } finally {
             setUploading(false);
         }
@@ -294,41 +286,21 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
                     <div>
                         <p className="text-brand-text-secondary">Your AI voice profile is active.</p>
                         <p className="text-sm text-gray-400 mt-1">Voice ID: {voiceProfile.voice_id}</p>
+                        <button onClick={handleDeleteVoice} disabled={uploading} className="mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
+                            {uploading ? 'Deleting...' : 'Delete Voice Profile'}
+                        </button>
                     </div>
                 ) : (
                     <div>
                         <p className="text-brand-text-secondary mb-4">Create your unique AI voice to generate audio previews. You can either record a sample directly or upload an existing audio file.</p>
-                        
                         <div className="flex border-b border-brand-border mb-4">
                             <button onClick={() => setUploadMode('record')} className={`px-4 py-2 font-semibold ${uploadMode === 'record' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Record</button>
                             <button onClick={() => setUploadMode('upload')} className={`px-4 py-2 font-semibold ${uploadMode === 'upload' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Upload</button>
                         </div>
-
-                        {uploadMode === 'record' && (
-                            <div className="flex items-center gap-4">
-                                {!isRecording ? (
-                                    <button onClick={handleStartRecording} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">
-                                        Start Recording
-                                    </button>
-                                ) : (
-                                    <button onClick={handleStopRecording} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">
-                                        Stop Recording
-                                    </button>
-                                )}
-                            </div>
-                        )}
-
-                        {uploadMode === 'upload' && (
-                             <input type="file" accept="audio/*" onChange={handleFileChange} className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-accent file:text-black hover:file:opacity-90" />
-                        )}
-
+                        {uploadMode === 'record' && (<div className="flex items-center gap-4">{!isRecording ? (<button onClick={handleStartRecording} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Start Recording</button>) : (<button onClick={handleStopRecording} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Stop Recording</button>)}</div>)}
+                        {uploadMode === 'upload' && (<input type="file" accept="audio/*" onChange={handleFileChange} className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-accent file:text-black hover:file:opacity-90" />)}
                         {audioUrl && <audio src={audioUrl} controls className="mt-4" />}
-                        
-                        {(audioBlob || file) && (
-                             <button onClick={handleCreateVoice} disabled={uploading} className="mt-4 bg-brand-accent hover:opacity-90 text-black font-bold py-2 px-4 rounded-lg disabled:opacity-50">
-                                {uploading ? 'Creating Voice...' : 'Create Voice Profile'}
-                            </button>
-                        )}
+                        {(audioBlob || file) && (<button onClick={handleCreateVoice} disabled={uploading} className="mt-4 bg-brand-accent hover:opacity-90 text-black font-bold py-2 px-4 rounded-lg disabled:opacity-50">{uploading ? 'Creating Voice...' : 'Create Voice Profile'}</button>)}
                     </div>
                 )}
             </div>
