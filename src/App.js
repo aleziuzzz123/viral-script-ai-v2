@@ -109,7 +109,7 @@ const Dashboard = ({ session, profile, setProfile }) => {
             if (!response.ok) throw new Error('AI failed to generate content.');
             const data = await response.json();
             setGeneratedContent(data);
-            setWizardStep(1); // Reset wizard after generation
+            setWizardStep(1);
         } catch (err) {
             setError(err.message);
         } finally {
