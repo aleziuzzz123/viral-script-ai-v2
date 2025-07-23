@@ -6,12 +6,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'brand-background': '#4B1D5E', // Refined Rich Purple (deep, elegant)
-        'brand-container': '#1F172A',  // Dark Purple, good for UI containers
-        'brand-accent': '#EC4899',     // Vibrant Pink (eye-catching yet balanced)
-        'brand-text-primary': '#F9FAFB', // Crisp White (high readability)
-        'brand-text-secondary': '#C4B5FD', // Soft Lavender (complements primary text)
-        'brand-border': '#372549',     // Muted Purple (clean separation)
+        'brand-background': '#3C096C',     // Deep Vibrant Purple (fresh and professional)
+        'brand-container': '#240046',      // Darker Purple (rich, elegant containers)
+        'brand-accent': '#FF6DC1',         // Lighter Pink Accent (brighter, more engaging CTA)
+        'brand-text-primary': '#FFFFFF',   // Pure White (maximum readability)
+        'brand-text-secondary': '#E0AAFF', // Soft Lilac (light secondary text)
+        'brand-border': '#5A189A',         // Medium Purple Border (clear, attractive separation)
       }
     },
   },
