@@ -6,12 +6,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'brand-background': '#601166', // Your New Rich Purple
-        'brand-container': '#1E1A2A',
-        'brand-accent': '#F43F5E',     // Magenta Pink
-        'brand-text-primary': '#F0F2F5',
-        'brand-text-secondary': '#A09CB0',
-        'brand-border': '#2D283D',
+        'brand-background': '#4B1D5E', // Refined Rich Purple (deep, elegant)
+        'brand-container': '#1F172A',  // Dark Purple, good for UI containers
+        'brand-accent': '#EC4899',     // Vibrant Pink (eye-catching yet balanced)
+        'brand-text-primary': '#F9FAFB', // Crisp White (high readability)
+        'brand-text-secondary': '#C4B5FD', // Soft Lavender (complements primary text)
+        'brand-border': '#372549',     // Muted Purple (clean separation)
       }
     },
   },
