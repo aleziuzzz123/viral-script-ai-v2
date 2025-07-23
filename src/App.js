@@ -172,12 +172,14 @@ const CalendarView = ({ session, voiceProfile }) => {
     );
 };
 
-// --- Account View Component (UPDATED with In-App Recorder) ---
+// --- Account View Component (UPDATED with In-App Recorder + File Upload) ---
 const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
     const [uploading, setUploading] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [audioBlob, setAudioBlob] = useState(null);
     const [audioUrl, setAudioUrl] = useState(null);
+    const [file, setFile] = useState(null);
+    const [uploadMode, setUploadMode] = useState('record'); // 'record' or 'upload'
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
 
@@ -186,18 +188,16 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorderRef.current = new MediaRecorder(stream);
             audioChunksRef.current = [];
-
             mediaRecorderRef.current.ondataavailable = (event) => {
                 audioChunksRef.current.push(event.data);
             };
-
             mediaRecorderRef.current.onstop = () => {
                 const blob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
                 const url = URL.createObjectURL(blob);
                 setAudioBlob(blob);
                 setAudioUrl(url);
+                setFile(null); // Clear file if recording is made
             };
-
             mediaRecorderRef.current.start();
             setIsRecording(true);
         } catch (err) {
@@ -213,19 +213,29 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
         }
     };
 
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const selectedFile = e.target.files[0];
+            setFile(selectedFile);
+            setAudioBlob(null); // Clear recording if file is selected
+            setAudioUrl(URL.createObjectURL(selectedFile));
+        }
+    };
+
     const handleCreateVoice = async () => {
-        if (!audioBlob) {
-            alert("Please record an audio sample first.");
+        const audioData = audioBlob || file;
+        const audioName = audioBlob ? 'voice_sample.wav' : file.name;
+
+        if (!audioData) {
+            alert("Please record or upload an audio sample first.");
             return;
         }
         setUploading(true);
         try {
             const formData = new FormData();
-            formData.append('files', audioBlob, 'voice_sample.wav');
+            formData.append('files', audioData, audioName);
             formData.append('name', `User_${session.user.id}`);
 
-            // NOTE: The fetch request for multipart/form-data should NOT have a 'Content-Type' header.
-            // The browser will set it automatically with the correct boundary.
             const response = await fetch('/.netlify/functions/create-voice', {
                 method: 'POST',
                 body: formData,
@@ -271,22 +281,36 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
                     </div>
                 ) : (
                     <div>
-                        <p className="text-brand-text-secondary mb-4">Create your unique AI voice by recording a short audio sample. This allows you to generate audio previews in your own voice.</p>
-                        <div className="flex items-center gap-4">
-                            {!isRecording ? (
-                                <button onClick={handleStartRecording} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">
-                                    Start Recording
-                                </button>
-                            ) : (
-                                <button onClick={handleStopRecording} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">
-                                    Stop Recording
-                                </button>
-                            )}
-                            {audioUrl && <audio src={audioUrl} controls />}
+                        <p className="text-brand-text-secondary mb-4">Create your unique AI voice to generate audio previews. You can either record a sample directly or upload an existing audio file.</p>
+                        
+                        <div className="flex border-b border-brand-border mb-4">
+                            <button onClick={() => setUploadMode('record')} className={`px-4 py-2 font-semibold ${uploadMode === 'record' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Record</button>
+                            <button onClick={() => setUploadMode('upload')} className={`px-4 py-2 font-semibold ${uploadMode === 'upload' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Upload</button>
                         </div>
-                        {audioBlob && (
+
+                        {uploadMode === 'record' && (
+                            <div className="flex items-center gap-4">
+                                {!isRecording ? (
+                                    <button onClick={handleStartRecording} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">
+                                        Start Recording
+                                    </button>
+                                ) : (
+                                    <button onClick={handleStopRecording} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">
+                                        Stop Recording
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        {uploadMode === 'upload' && (
+                             <input type="file" accept="audio/*" onChange={handleFileChange} className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-accent file:text-black hover:file:opacity-90" />
+                        )}
+
+                        {audioUrl && <audio src={audioUrl} controls className="mt-4" />}
+                        
+                        {(audioBlob || file) && (
                              <button onClick={handleCreateVoice} disabled={uploading} className="mt-4 bg-brand-accent hover:opacity-90 text-black font-bold py-2 px-4 rounded-lg disabled:opacity-50">
-                                {uploading ? 'Creating Voice...' : 'Create Voice Profile from Recording'}
+                                {uploading ? 'Creating Voice...' : 'Create Voice Profile'}
                             </button>
                         )}
                     </div>
