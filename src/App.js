@@ -486,6 +486,187 @@ const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
     );
 };
 
+// --- NEW Creator's Hub Component ---
+const CreatorsHub = () => {
+    const hubItems = [
+        {
+            icon: <BulbIcon />,
+            title: "Hook of the Day",
+            content: "The 3 biggest mistakes creators make with [your topic].",
+            color: "text-yellow-400"
+        },
+        {
+            icon: <SparkleIcon />,
+            title: "Quick Tip",
+            content: "Videos under 30 seconds have the highest completion rate. Keep it punchy!",
+            color: "text-green-400"
+        },
+        {
+            icon: <AudioIcon className="text-brand-accent"/>,
+            title: "Trending Audio",
+            content: "Upbeat instrumental pop is trending. Try it for your next educational video.",
+            color: "text-pink-400"
+        }
+    ];
+
+    const [currentItem, setCurrentItem] = useState(0);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentItem(prev => (prev + 1) % hubItems.length);
+        }, 5000); // Rotate every 5 seconds
+        return () => clearInterval(timer);
+    }, [hubItems.length]);
+
+    return (
+        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 h-full">
+            <h3 className="text-lg font-bold text-white mb-4">Creator's Hub</h3>
+            <div className="relative h-full">
+                {hubItems.map((item, index) => (
+                    <div key={index} className={`absolute w-full transition-opacity duration-500 ${index === currentItem ? 'opacity-100' : 'opacity-0'}`}>
+                        <div className={`flex items-center gap-3 mb-2 ${item.color}`}>
+                            {item.icon}
+                            <h4 className="font-semibold">{item.title}</h4>
+                        </div>
+                        <p className="text-brand-text-secondary text-sm">{item.content}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// --- REDESIGNED Dashboard Component ---
+const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voiceProfile }) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [generatedContent, setGeneratedContent] = useState(null);
+    const [wizardStep, setWizardStep] = useState(1);
+    const [topic, setTopic] = useState('');
+    const [goal, setGoal] = useState('Go Viral / Maximize Reach');
+    const [tone, setTone] = useState('Engaging');
+    const [audience, setAudience] = useState('');
+    const { addToast } = useToast();
+
+    const trendingTopics = [
+        "The biggest myth about fitness",
+        "3 AI tools that feel illegal to know",
+        "A simple productivity hack that saved me 10 hours a week"
+    ];
+
+    const handleTopicClick = (selectedTopic) => {
+        setTopic(selectedTopic);
+        setWizardStep(2);
+    };
+
+    const handleGenerate = useCallback(async () => {
+        if (!profile || profile.credits < 1) { setShowBuyCreditsModal(true); return; }
+        if (!topic) { addToast('Please enter a topic.', 'error'); return; }
+        if (wizardStep === 1) { setWizardStep(2); return; }
+
+        setIsLoading(true);
+        setGeneratedContent(null);
+        try {
+            const { error: updateError } = await supabase.from('profiles').update({ credits: profile.credits - 1 }).eq('id', session.user.id);
+            if (updateError) throw updateError;
+            setProfile(prev => ({ ...prev, credits: prev.credits - 1 }));
+
+            const response = await fetch('/.netlify/functions/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic, goal, tone, audience, userId: session.user.id }),
+            });
+            if (!response.ok) throw new Error('AI failed to generate content.');
+            const data = await response.json();
+            setGeneratedContent(data);
+            
+            await supabase.from('generated_content').insert({ user_id: session.user.id, topic: topic, blueprint: data });
+            
+            setWizardStep(1);
+            setTopic('');
+        } catch (err) {
+            addToast(err.message, 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [topic, goal, tone, audience, profile, session, setProfile, wizardStep, setShowBuyCreditsModal, addToast]);
+
+    return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+                        <h2 className="text-3xl font-bold text-white">Creator's Command Center</h2>
+                        <p className="text-brand-text-secondary mt-2 mb-6">Welcome back, {session.user.email.split('@')[0]}! Let's create your next viral hit.</p>
+                        
+                        {wizardStep === 1 && (
+                            <div>
+                                <label className="font-semibold text-lg text-white block mb-3">What's your video topic?</label>
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to start a podcast'" className="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent" />
+                                    <button onClick={handleGenerate} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-3 px-6 rounded-lg whitespace-nowrap transition-transform transform hover:scale-105">Create Blueprint</button>
+                                </div>
+                                <div className="mt-6">
+                                    <p className="text-sm text-brand-text-secondary mb-3">Stuck? Try a trending topic:</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {trendingTopics.map(t => (
+                                            <button key={t} onClick={() => handleTopicClick(t)} className="bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-3 py-1 rounded-full transition-colors">{t}</button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {wizardStep === 2 && (
+                            <div className="space-y-6 text-left animate-fade-in">
+                                <p className="text-brand-text-secondary">Topic: <span className="font-bold text-white">{topic}</span></p>
+                                <div>
+                                    <label className="font-semibold text-white block mb-2">What is your primary goal?</label>
+                                    <select value={goal} onChange={(e) => setGoal(e.target.value)} className="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white">
+                                        <option>Go Viral / Maximize Reach</option>
+                                        <option>Sell a Product / Service</option>
+                                        <option>Educate My Audience</option>
+                                        <option>Tell a Personal Story</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="font-semibold text-white block mb-2">What is the desired tone?</label>
+                                    <select value={tone} onChange={(e) => setTone(e.target.value)} className="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white">
+                                        <option>Engaging</option>
+                                        <option>Funny & Comedic</option>
+                                        <option>Inspirational & Motivational</option>
+                                        <option>Serious & Educational</option>
+                                        <option>Shocking & Controversial</option>
+                                    </select>
+                                </div>
+                                 <div>
+                                    <label className="font-semibold text-white block mb-2">Briefly describe your target audience.</label>
+                                    <input type="text" value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="e.g., 'Beginner entrepreneurs'" className="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white" />
+                                </div>
+                                <button onClick={handleGenerate} disabled={isLoading} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 rounded-lg text-lg flex items-center justify-center gap-2 transition-transform transform hover:scale-105">
+                                    {isLoading && <LoadingSpinner />}
+                                    {isLoading ? 'Generating...' : 'Generate My Custom Blueprint'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    {isLoading && <SkeletonLoader />}
+                    {generatedContent && <ResultsDisplay content={generatedContent} session={session} onScheduled={() => { /* Re-fetch history if needed */ }} voiceProfile={voiceProfile} />}
+                </div>
+                <div className="lg:col-span-1 space-y-8">
+                    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                        <div className="flex items-center gap-3 mb-4 text-white">
+                            <CreditIcon />
+                            <h3 className="text-lg font-bold">Credit Balance</h3>
+                        </div>
+                        <p className="text-5xl font-bold text-white">{profile ? profile.credits : '0'}</p>
+                        <button onClick={() => setShowBuyCreditsModal(true)} className="w-full mt-4 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-lg transition-colors">Buy More Credits</button>
+                    </div>
+                    <CreatorsHub />
+                </div>
+            </div>
+        </div>
+    );
+};
 
 // --- Main App Component ---
 const App = () => {
