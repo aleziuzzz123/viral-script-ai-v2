@@ -186,7 +186,7 @@ const ResultsDisplay = ({ content, session, voiceProfile, onPerformanceSaved }) 
     );
 };
 
-// --- Calendar View Component (UPGRADED) ---
+// --- Calendar View Component (FIXED) ---
 const CalendarView = ({ session, voiceProfile }) => {
     const [events, setEvents] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
