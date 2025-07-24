@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback, useRef, createContext, useCont
 import { supabase } from './supabaseClient';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import Calendar from 'react-calendar'; // --- FIX: Replaced react-big-calendar
-import 'react-calendar/dist/Calendar.css'; // --- FIX: New CSS for the calendar
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 import './App.css';
 
 // --- Toast Notification System ---
@@ -33,7 +33,7 @@ const ToastProvider = ({ children }) => {
 const useToast = () => useContext(ToastContext);
 
 // --- SVG Icons ---
-const CreditIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12h2v4h-2v-4zm0 6h2v2h-2v-2z" fill="currentColor"/></svg>;
+const CreditIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 8.5h20M7 15.5h3M12 15.5h2M2 12.031V17c0 2 1 3 3 3h14c2 0 3-1 3-3V8c0-2-1-3-3-3H5c-2 0-3 1-3 3" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const HistoryIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 0 1 7-7 7 7 0 0 1 7 7 7 7 0 0 1-7 7v2a9 9 0 0 0 9-9 9 9 0 0 0-9-9z" fill="currentColor"/><path d="M12 8v5l4.25 2.52.75-1.23-3.5-2.07V8z" fill="currentColor"/></svg>;
 const VisualsIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="currentColor"/></svg>;
 const AudioIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="currentColor"/></svg>;
@@ -41,8 +41,10 @@ const HashtagIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="
 const PlayIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>;
 const LoadingSpinner = () => <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>;
 const VoiceIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z" fill="currentColor"></path></svg>;
+const BulbIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 22h6M12 18v4M9.31 15.69c.39.39 1.02.39 1.41 0l1.48-1.48c.31-.31.47-.72.47-1.13V12c0-.41-.16-.82-.47-1.13L10.72 9.39c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.5 12l-1.19 1.19c-.38.39-.38 1.03 0 1.42zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+const SparkleIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 
-// --- Components for the New Homepage ---
+// --- Homepage Components ---
 const FeatureCard = ({ icon, title, children }) => (
     <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm border border-white/10">
         <div className="text-brand-accent mb-3">{icon}</div>
@@ -60,19 +62,14 @@ const TestimonialCard = ({ quote, name, title }) => (
         </div>
     </div>
 );
-
-// --- New Homepage Component ---
 const HomePage = ({ setShowAuthModal }) => {
     return (
         <div className="w-full">
-            {/* Hero Section */}
             <section className="text-center py-20 md:py-32 px-4">
                 <h1 className="text-5xl md:text-7xl font-extrabold text-white">Stop Guessing. Start Going Viral.</h1>
                 <p className="text-xl text-brand-text-secondary max-w-3xl mx-auto mt-6 mb-10">Generate complete viral video blueprints—from hooks and scripts to production notes and hashtags—in seconds with our advanced AI strategist.</p>
-                <button onClick={() => setShowAuthModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Generate Your First Blueprint Free</button>
+                <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Generate Your First Blueprint Free</button>
             </section>
-
-            {/* How It Works Section */}
             <section className="py-20 px-4">
                 <h2 className="text-4xl font-bold text-center text-white mb-12">How It Works</h2>
                 <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8 text-center">
@@ -93,8 +90,6 @@ const HomePage = ({ setShowAuthModal }) => {
                     </div>
                 </div>
             </section>
-
-            {/* Features Showcase Section */}
             <section className="py-20 px-4 bg-white/5">
                 <h2 className="text-4xl font-bold text-center text-white mb-12">A Feature for Every Step</h2>
                 <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
@@ -104,8 +99,6 @@ const HomePage = ({ setShowAuthModal }) => {
                     <FeatureCard icon={<VisualsIcon />} title="Full Production Plan">Get shot-by-shot visual ideas, audio suggestions, and a curated hashtag strategy.</FeatureCard>
                 </div>
             </section>
-
-            {/* Testimonials Section */}
             <section className="py-20 px-4">
                 <h2 className="text-4xl font-bold text-center text-white mb-12">Loved by Creators Everywhere</h2>
                 <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
@@ -113,24 +106,21 @@ const HomePage = ({ setShowAuthModal }) => {
                     <TestimonialCard quote="The AI-scored hooks are incredibly accurate. My engagement has gone through the roof since I started using this tool." name="Mike P." title="YouTube Shorts Specialist" />
                 </div>
             </section>
-
-            {/* Final CTA Section */}
             <section className="py-20 px-4 text-center">
                  <h2 className="text-4xl font-bold text-white mb-6">Ready to Go Viral?</h2>
-                 <button onClick={() => setShowAuthModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Get Started for Free</button>
+                 <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Get Started for Free</button>
             </section>
         </div>
     );
 };
 
-// --- Loading Skeleton Component (NEW) ---
+// --- Loading Skeleton Component ---
 const SkeletonLoader = () => (
-    <div className="mt-8 bg-brand-container border border-brand-border rounded-2xl p-6 space-y-4 animate-pulse">
-        <div className="h-8 bg-gray-700 rounded w-1/3"></div>
+    <div className="mt-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 space-y-4 animate-pulse">
+        <div className="h-8 bg-gray-700/50 rounded w-1/3"></div>
         <div className="space-y-4">
-            <div className="h-24 bg-gray-700 rounded"></div>
-            <div className="h-24 bg-gray-700 rounded"></div>
-            <div className="h-24 bg-gray-700 rounded"></div>
+            <div className="h-24 bg-gray-700/50 rounded"></div>
+            <div className="h-24 bg-gray-700/50 rounded"></div>
         </div>
     </div>
 );
@@ -246,7 +236,7 @@ const ResultsDisplay = ({ content, session, onScheduled, voiceProfile }) => {
     );
 };
 
-// --- Calendar View Component (UPDATED with react-calendar) ---
+// --- Calendar View Component ---
 const CalendarView = ({ session, voiceProfile }) => {
     const [events, setEvents] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
@@ -444,169 +434,6 @@ const AccountView = ({ session, voiceProfile, setVoiceProfile }) => {
     );
 };
 
-
-// --- Dashboard Component ---
-const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voiceProfile, setVoiceProfile }) => {
-    const [activeView, setActiveView] = useState('dashboard');
-    const [isLoading, setIsLoading] = useState(false);
-    const [generatedContent, setGeneratedContent] = useState(null);
-    const [wizardStep, setWizardStep] = useState(1);
-    const [topic, setTopic] = useState('');
-    const [goal, setGoal] = useState('Go Viral / Maximize Reach');
-    const [tone, setTone] = useState('Engaging');
-    const [audience, setAudience] = useState('');
-    const [generationHistory, setGenerationHistory] = useState([]);
-    const [historyLoading, setHistoryLoading] = useState(true);
-    const { addToast } = useToast();
-
-    const fetchHistory = useCallback(async () => {
-        if (!session?.user) return;
-        setHistoryLoading(true);
-        const { data } = await supabase.from('generated_content').select('id, created_at, topic').eq('user_id', session.user.id).order('created_at', { ascending: false }).limit(5);
-        setGenerationHistory(data || []);
-        setHistoryLoading(false);
-    }, [session]);
-
-    useEffect(() => {
-        fetchHistory();
-    }, [session, fetchHistory]);
-
-    const handleGenerate = useCallback(async () => {
-        if (!profile || profile.credits < 1) { setShowBuyCreditsModal(true); return; }
-        if (!topic) { addToast('Please enter a topic.', 'error'); return; }
-        if (wizardStep === 1) { setWizardStep(2); return; }
-
-        setIsLoading(true);
-        setGeneratedContent(null);
-        try {
-            const { error: updateError } = await supabase.from('profiles').update({ credits: profile.credits - 1 }).eq('id', session.user.id);
-            if (updateError) throw updateError;
-            setProfile(prev => ({ ...prev, credits: prev.credits - 1 }));
-
-            const response = await fetch('/.netlify/functions/generate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic, goal, tone, audience, userId: session.user.id }),
-            });
-            if (!response.ok) throw new Error('AI failed to generate content.');
-            const data = await response.json();
-            setGeneratedContent(data);
-            
-            const { error: saveError } = await supabase.from('generated_content').insert({
-                user_id: session.user.id,
-                topic: topic,
-                blueprint: data
-            });
-            if (saveError) throw saveError;
-            
-            fetchHistory();
-            setWizardStep(1);
-        } catch (err) {
-            addToast(err.message, 'error');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [topic, goal, tone, audience, profile, session, setProfile, wizardStep, setShowBuyCreditsModal, fetchHistory, addToast]);
-
-    return (
-        <>
-            <nav className="border-b border-white/10 bg-white/5 backdrop-blur-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex">
-                    <button onClick={() => setActiveView('dashboard')} className={`px-4 py-3 font-semibold ${activeView === 'dashboard' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Dashboard</button>
-                    <button onClick={() => setActiveView('calendar')} className={`px-4 py-3 font-semibold ${activeView === 'calendar' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Content Calendar</button>
-                    <button onClick={() => setActiveView('account')} className={`px-4 py-3 font-semibold ${activeView === 'account' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-brand-text-secondary'}`}>Account</button>
-                </div>
-            </nav>
-
-            {activeView === 'dashboard' && (
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 space-y-8">
-                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-                                <h2 className="text-3xl font-bold text-brand-text-primary">Welcome back, {session.user.email.split('@')[0]}!</h2>
-                                <p className="text-brand-text-secondary mt-2 mb-6">Let's create your next viral hit.</p>
-                                
-                                {wizardStep === 1 && (
-                                    <div>
-                                        <label className="font-semibold text-lg text-brand-text-primary block mb-3">What's your video topic?</label>
-                                        <div className="flex flex-col sm:flex-row gap-2">
-                                            <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to start a podcast'" className="w-full bg-brand-background border border-brand-border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-brand-accent" />
-                                            <button onClick={handleGenerate} className="bg-brand-accent hover:opacity-90 text-black font-bold py-3 px-6 rounded-lg whitespace-nowrap">Create Blueprint</button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {wizardStep === 2 && (
-                                    <div className="space-y-6 text-left">
-                                        <div>
-                                            <label className="font-semibold text-brand-text-primary block mb-2">What is your primary goal?</label>
-                                            <select value={goal} onChange={(e) => setGoal(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3">
-                                                <option>Go Viral / Maximize Reach</option>
-                                                <option>Sell a Product / Service</option>
-                                                <option>Educate My Audience</option>
-                                                <option>Tell a Personal Story</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="font-semibold text-brand-text-primary block mb-2">What is the desired tone?</label>
-                                            <select value={tone} onChange={(e) => setTone(e.target.value)} className="w-full bg-brand-background border border-brand-border rounded-lg p-3">
-                                                <option>Engaging</option>
-                                                <option>Funny & Comedic</option>
-                                                <option>Inspirational & Motivational</option>
-                                                <option>Serious & Educational</option>
-                                                <option>Shocking & Controversial</option>
-                                            </select>
-                                        </div>
-                                         <div>
-                                            <label className="font-semibold text-brand-text-primary block mb-2">Briefly describe your target audience.</label>
-                                            <input type="text" value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="e.g., 'Beginner entrepreneurs'" className="w-full bg-brand-background border border-brand-border rounded-lg p-3" />
-                                        </div>
-                                        <button onClick={handleGenerate} disabled={isLoading} className="w-full bg-brand-accent hover:opacity-90 text-black font-bold py-4 rounded-lg text-lg">
-                                            {isLoading ? 'Generating...' : 'Generate My Custom Blueprint'}
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                            {isLoading && <SkeletonLoader />}
-                            {generatedContent && <ResultsDisplay content={generatedContent} session={session} onScheduled={fetchHistory} voiceProfile={voiceProfile} />}
-                        </div>
-                        <div className="lg:col-span-1 space-y-8">
-                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <CreditIcon />
-                                    <h3 className="text-lg font-semibold text-brand-text-primary">Credit Balance</h3>
-                                </div>
-                                <p className="text-5xl font-bold text-brand-accent">{profile ? profile.credits : '0'}</p>
-                                <button onClick={() => setShowBuyCreditsModal(true)} className="w-full mt-4 bg-brand-accent hover:opacity-90 text-black font-bold py-3 rounded-lg">Buy More Credits</button>
-                            </div>
-                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <HistoryIcon />
-                                    <h3 className="text-lg font-semibold text-brand-text-primary">Recent Activity</h3>
-                                </div>
-                                <ul className="space-y-3 text-sm text-brand-text-secondary">
-                                    {historyLoading ? (
-                                        <p>Loading history...</p>
-                                    ) : generationHistory.length > 0 ? (
-                                        generationHistory.map(item => (
-                                            <li key={item.id} className="truncate">Generated scripts for "{item.topic}"</li>
-                                        ))
-                                    ) : (
-                                        <p>No activity yet.</p>
-                                    )}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {activeView === 'calendar' && <CalendarView session={session} voiceProfile={voiceProfile} />}
-            {activeView === 'account' && <AccountView session={session} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />}
-        </>
-    );
-};
-
 // --- Buy Credits Modal ---
 const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
     const [loading, setLoading] = useState(false);
@@ -668,6 +495,7 @@ const App = () => {
     const [profileLoading, setProfileLoading] = useState(true);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
+    const [activeView, setActiveView] = useState('dashboard');
 
     useEffect(() => {
         setProfileLoading(true);
@@ -711,35 +539,46 @@ const App = () => {
         <ToastProvider>
             <div className="bg-brand-background text-brand-text-secondary min-h-screen font-sans">
                 {showAuthModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                        <div className="bg-brand-container border border-brand-border rounded-2xl p-8 max-w-md w-full relative">
-                            <button onClick={() => setShowAuthModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button>
-                            <h3 className="text-2xl font-bold text-center text-brand-text-primary mb-2">Your Blueprint is Ready!</h3>
-                            <p className="text-brand-text-secondary text-center mb-6">Create a free account to view it.</p>
-                            <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google']} theme="dark" />
-                        </div>
-                    </div>
+                     <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                         <div className="bg-brand-container border border-brand-border rounded-2xl p-8 max-w-md w-full relative">
+                             <button onClick={() => setShowAuthModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button>
+                             <h3 className="text-2xl font-bold text-center text-brand-text-primary mb-2">Your Blueprint is Ready!</h3>
+                             <p className="text-brand-text-secondary text-center mb-6">Create a free account to view it.</p>
+                             <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google']} theme="dark" />
+                         </div>
+                     </div>
                 )}
                 
                 {showBuyCreditsModal && <BuyCreditsModal setShowBuyCreditsModal={setShowBuyCreditsModal} session={session} />}
 
-                <header className="border-b border-white/10 sticky top-0 bg-brand-background/80 backdrop-blur-lg z-50">
+                <header className="border-b border-white/10 sticky top-0 bg-black/30 backdrop-blur-lg z-40">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                        <h1 className="text-2xl font-bold text-brand-text-primary">Viral Script AI</h1>
+                        <h1 className="text-2xl font-bold text-white">Viral Script AI</h1>
                         {session ? (
                             <div className="flex items-center gap-4">
-                                <span className="text-sm text-brand-text-secondary">Credits: <span className="font-bold text-brand-text-primary">{profileLoading ? '...' : (profile ? profile.credits : 0)}</span></span>
-                                <button onClick={async () => await supabase.auth.signOut()} className="bg-brand-container hover:bg-gray-700 text-brand-text-primary font-semibold py-2 px-4 rounded-lg text-sm border border-brand-border">Logout</button>
+                                <span className="text-sm text-white/80">Credits: <span className="font-bold text-white">{profileLoading ? '...' : (profile ? profile.credits : 0)}</span></span>
+                                <button onClick={async () => await supabase.auth.signOut()} className="bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg text-sm border border-white/20">Logout</button>
                             </div>
                         ) : (
-                            <button onClick={() => setShowAuthModal(true)} className="bg-brand-accent hover:opacity-90 text-black font-bold py-2 px-4 rounded-lg">Login / Sign Up</button>
+                            <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-2 px-4 rounded-lg">Login / Sign Up</button>
                         )}
                     </div>
                 </header>
 
                 <main>
                     {session ? (
-                        <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />
+                        <>
+                            <nav className="border-b border-white/10 bg-black/20 backdrop-blur-sm">
+                                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex">
+                                    <button onClick={() => setActiveView('dashboard')} className={`px-4 py-3 font-semibold ${activeView === 'dashboard' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Dashboard</button>
+                                    <button onClick={() => setActiveView('calendar')} className={`px-4 py-3 font-semibold ${activeView === 'calendar' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Content Calendar</button>
+                                    <button onClick={() => setActiveView('account')} className={`px-4 py-3 font-semibold ${activeView === 'account' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Account</button>
+                                </div>
+                            </nav>
+                            {activeView === 'dashboard' && <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} />}
+                            {activeView === 'calendar' && <CalendarView session={session} voiceProfile={voiceProfile} />}
+                            {activeView === 'account' && <AccountView session={session} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />}
+                        </>
                     ) : (
                         <HomePage setShowAuthModal={setShowAuthModal} />
                     )}
