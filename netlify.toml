@@ -1,11 +1,10 @@
 [build]
-  command = "CI= npm install && npm run build"
+  command = "npm install && npx react-scripts build"
   publish = "build"
 
 [functions]
   directory = "netlify/functions"
 
-# Add this new section at the bottom
 [build.environment]
   NODE_VERSION = "18"
 
