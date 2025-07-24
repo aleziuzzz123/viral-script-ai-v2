@@ -1,13 +1,14 @@
-# This tells Netlify how to build your site
 [build]
-  command = "npm install && npm run build"
+  command = "CI= npm install && npm run build"
   publish = "build"
 
-# This tells Netlify where your serverless functions are
 [functions]
   directory = "netlify/functions"
 
-# This rule is for single-page applications like React
+# Add this new section at the bottom
+[build.environment]
+  NODE_VERSION = "18"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
