@@ -1,10 +1,10 @@
-@import 'react-calendar/dist/Calendar.css';
 import React, { useState, useEffect, useCallback, useRef, createContext, useContext } from 'react';
 import { supabase } from './supabaseClient';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import Calendar from 'react-calendar';
-import './App.css'; // This now contains the calendar styles
+import Calendar from 'react-calendar'; // --- FIX: Replaced react-big-calendar
+import 'react-calendar/dist/Calendar.css'; // --- FIX: New CSS for the calendar
+import './App.css';
 
 // --- Toast Notification System ---
 const ToastContext = createContext();
