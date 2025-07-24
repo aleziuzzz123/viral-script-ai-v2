@@ -491,7 +491,7 @@ const AICoachInsights = ({ session, refreshKey }) => {
 
     useEffect(() => {
         fetchInsights();
-    }, [session, refreshKey]);
+    }, [session, refreshKey, fetchInsights]);
 
     return (
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 h-full">
