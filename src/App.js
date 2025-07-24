@@ -469,32 +469,40 @@ const AICoachInsights = ({ session, refreshKey }) => {
     const [insights, setInsights] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchInsights = async () => {
-            if (!session?.user) return;
-            setLoading(true);
-            try {
-                const response = await fetch('/.netlify/functions/get-insights', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: session.user.id }),
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    setInsights(data.insights);
-                }
-            } catch (error) {
-                console.error("Failed to fetch insights:", error);
-            } finally {
-                setLoading(false);
+    const fetchInsights = useCallback(async () => {
+        if (!session?.user) return;
+        setLoading(true);
+        try {
+            const response = await fetch('/.netlify/functions/get-insights', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: session.user.id }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setInsights(data.insights);
             }
-        };
+        } catch (error) {
+            console.error("Failed to fetch insights:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [session]);
+
+    useEffect(() => {
         fetchInsights();
     }, [session, refreshKey]);
 
     return (
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 h-full">
-            <h3 className="text-lg font-bold text-white mb-4">AI Coach Insights</h3>
+            <div className="flex justify-between items-center mb-4">
+                 <h3 className="text-lg font-bold text-white">AI Coach Insights</h3>
+                 <button onClick={fetchInsights} className="text-white/50 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                    </svg>
+                 </button>
+            </div>
             <div className="relative h-40">
                 {loading ? (
                     <p className="text-white/70">Analyzing your performance...</p>
@@ -517,7 +525,7 @@ const AICoachInsights = ({ session, refreshKey }) => {
 };
 
 // --- Dashboard Component ---
-const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voiceProfile, onContentTracked }) => {
+const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voiceProfile, onContentTracked, refreshKey }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [generatedContent, setGeneratedContent] = useState(null);
     const [wizardStep, setWizardStep] = useState(1);
@@ -644,7 +652,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
                         <p className="text-5xl font-bold text-white">{profile ? profile.credits : '0'}</p>
                         <button onClick={() => setShowBuyCreditsModal(true)} className="w-full mt-4 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-lg transition-colors">Buy More Credits</button>
                     </div>
-                    <AICoachInsights session={session} refreshKey={profile?.credits} />
+                    <AICoachInsights session={session} refreshKey={refreshKey} />
                 </div>
             </div>
         </div>
@@ -744,7 +752,7 @@ const App = () => {
                                     <button onClick={() => setActiveView('account')} className={`px-4 py-3 font-semibold ${activeView === 'account' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Account</button>
                                 </div>
                             </nav>
-                            {activeView === 'dashboard' && <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} onContentTracked={handleContentTracked} />}
+                            {activeView === 'dashboard' && <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} onContentTracked={handleContentTracked} refreshKey={refreshKey} />}
                             {activeView === 'calendar' && <CalendarView session={session} voiceProfile={voiceProfile} />}
                             {activeView === 'account' && <AccountView session={session} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />}
                         </>
