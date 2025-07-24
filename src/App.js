@@ -43,10 +43,71 @@ const LoadingSpinner = () => <svg className="animate-spin h-5 w-5 text-white" xm
 const VoiceIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z" fill="currentColor"></path></svg>;
 const LightbulbIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 22h6M12 18v4M9.31 15.69c.39.39 1.02.39 1.41 0l1.48-1.48c.31-.31.47-.72.47-1.13V12c0-.41-.16-.82-.47-1.13L10.72 9.39c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.5 12l-1.19 1.19c-.38.39-.38 1.03 0 1.42zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 
-// --- Homepage Components ---
+// --- Homepage Components (UPDATED with Images) ---
 const FeatureCard = ({ icon, title, children }) => ( <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm border border-white/10"><div className="text-brand-accent mb-3">{icon}</div><h3 className="text-xl font-bold text-white mb-2">{title}</h3><p className="text-brand-text-secondary">{children}</p></div>);
-const TestimonialCard = ({ quote, name, title }) => ( <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm border border-white/10"><div className="flex text-yellow-400 mb-4">★★★★★</div><p className="text-white italic mb-4">"{quote}"</p><div><p className="font-bold text-white">{name}</p><p className="text-brand-text-secondary">{title}</p></div></div>);
-const HomePage = ({ setShowAuthModal }) => ( <div className="w-full"><section className="text-center py-20 md:py-32 px-4"><h1 className="text-5xl md:text-7xl font-extrabold text-white">Stop Guessing. Start Going Viral.</h1><p className="text-xl text-brand-text-secondary max-w-3xl mx-auto mt-6 mb-10">Generate complete viral video blueprints—from hooks and scripts to production notes and hashtags—in seconds with our advanced AI strategist.</p><button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Generate Your First Blueprint Free</button></section><section className="py-20 px-4"><h2 className="text-4xl font-bold text-center text-white mb-12">How It Works</h2><div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8 text-center"><div><div className="text-5xl mb-4">1️⃣</div><h3 className="text-2xl font-bold text-white mb-2">Enter Your Topic</h3><p className="text-brand-text-secondary">Give our AI any idea, topic, or keyword.</p></div><div><div className="text-5xl mb-4">2️⃣</div><h3 className="text-2xl font-bold text-white mb-2">Generate Your Blueprint</h3><p className="text-brand-text-secondary">Receive a complete plan, including hooks, a full script, and production notes.</p></div><div><div className="text-5xl mb-4">3️⃣</div><h3 className="text-2xl font-bold text-white mb-2">Create & Post</h3><p className="text-brand-text-secondary">Use the blueprint to create high-impact content and watch your audience grow.</p></div></div></section><section className="py-20 px-4 bg-white/5"><h2 className="text-4xl font-bold text-center text-white mb-12">A Feature for Every Step</h2><div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8"><FeatureCard icon={<HistoryIcon />} title="AI-Scored Hooks">Don't just get hooks, get hooks scored by our AI for viral potential.</FeatureCard><FeatureCard icon={<VoiceIcon />} title="The Director's Cut">Hear your script in your own voice with AI-powered audio previews.</FeatureCard><FeatureCard icon={<Calendar />} title="Content Calendar">Track your past ideas and plan your future content with ease.</FeatureCard><FeatureCard icon={<VisualsIcon />} title="Full Production Plan">Get shot-by-shot visual ideas, audio suggestions, and a curated hashtag strategy.</FeatureCard></div></section><section className="py-20 px-4"><h2 className="text-4xl font-bold text-center text-white mb-12">Loved by Creators Everywhere</h2><div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8"><TestimonialCard quote="Viral Script AI has saved me hours of brainstorming every week. The 'Director's Cut' feature is a game-changer for my workflow!" name="Sarah L." title="TikTok Creator" /><TestimonialCard quote="The AI-scored hooks are incredibly accurate. My engagement has gone through the roof since I started using this tool." name="Mike P." title="YouTube Shorts Specialist" /></div></section><section className="py-20 px-4 text-center"><h2 className="text-4xl font-bold text-white mb-6">Ready to Go Viral?</h2><button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Get Started for Free</button></section></div>);
+const TestimonialCard = ({ quote, name, title, avatarUrl }) => ( 
+    <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+        <div className="flex text-yellow-400 mb-4">★★★★★</div>
+        <p className="text-white italic mb-4">"{quote}"</p>
+        <div className="flex items-center gap-4">
+            <img src={avatarUrl} alt={name} className="w-12 h-12 rounded-full object-cover" />
+            <div>
+                <p className="font-bold text-white">{name}</p>
+                <p className="text-brand-text-secondary">{title}</p>
+            </div>
+        </div>
+    </div>
+);
+const HomePage = ({ setShowAuthModal }) => ( 
+    <div className="w-full">
+        <section className="text-center py-20 md:py-32 px-4">
+            <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8 items-center">
+                <div className="text-left">
+                    <h1 className="text-5xl md:text-7xl font-extrabold text-white">Stop Guessing. Start Going Viral.</h1>
+                    <p className="text-xl text-brand-text-secondary max-w-xl mt-6 mb-10">Generate complete viral video blueprints—from hooks and scripts to production notes and hashtags—in seconds with our advanced AI strategist.</p>
+                    <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Generate Your First Blueprint Free</button>
+                </div>
+                <div>
+                    {/* --- NEW: Homepage Hero Image --- */}
+                    {/* --- Replace this placeholder with your generated image from Leonardo.ai --- */}
+                    <img src="https://placehold.co/1024x768/1e1b4b/4f46e5?text=Viral+Hook+AI" alt="AI generating viral ideas" className="rounded-2xl shadow-2xl shadow-purple-500/20" />
+                </div>
+            </div>
+        </section>
+        <section className="py-20 px-4">
+            <h2 className="text-4xl font-bold text-center text-white mb-12">How It Works</h2>
+            <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8 text-center">
+                <div><div className="text-5xl mb-4">1️⃣</div><h3 className="text-2xl font-bold text-white mb-2">Enter Your Topic</h3><p className="text-brand-text-secondary">Give our AI any idea, topic, or keyword.</p></div>
+                <div><div className="text-5xl mb-4">2️⃣</div><h3 className="text-2xl font-bold text-white mb-2">Generate Your Blueprint</h3><p className="text-brand-text-secondary">Receive a complete plan, including hooks, a full script, and production notes.</p></div>
+                <div><div className="text-5xl mb-4">3️⃣</div><h3 className="text-2xl font-bold text-white mb-2">Create & Post</h3><p className="text-brand-text-secondary">Use the blueprint to create high-impact content and watch your audience grow.</p></div>
+            </div>
+        </section>
+        <section className="py-20 px-4 bg-white/5">
+            <h2 className="text-4xl font-bold text-center text-white mb-12">A Feature for Every Step</h2>
+            <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8"><FeatureCard icon={<HistoryIcon />} title="AI-Scored Hooks">Don't just get hooks, get hooks scored by our AI for viral potential.</FeatureCard><FeatureCard icon={<VoiceIcon />} title="The Director's Cut">Hear your script in your own voice with AI-powered audio previews.</FeatureCard><FeatureCard icon={<Calendar />} title="Content Calendar">Track your past ideas and plan your future content with ease.</FeatureCard><FeatureCard icon={<VisualsIcon />} title="Full Production Plan">Get shot-by-shot visual ideas, audio suggestions, and a curated hashtag strategy.</FeatureCard></div>
+        </section>
+        <section className="py-20 px-4">
+            <h2 className="text-4xl font-bold text-center text-white mb-12">Loved by Creators Everywhere</h2>
+            <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
+                {/* --- NEW: Testimonial Avatars --- */}
+                {/* --- Replace these placeholders with your generated images --- */}
+                <TestimonialCard 
+                    quote="Viral Script AI has saved me hours of brainstorming every week. The 'Director's Cut' feature is a game-changer for my workflow!" 
+                    name="Sarah L." 
+                    title="TikTok Creator" 
+                    avatarUrl="https://placehold.co/100x100/EBF4FF/76A9FA?text=SL"
+                />
+                <TestimonialCard 
+                    quote="The AI-scored hooks are incredibly accurate. My engagement has gone through the roof since I started using this tool." 
+                    name="Mike P." 
+                    title="YouTube Shorts Specialist" 
+                    avatarUrl="https://placehold.co/100x100/EBF4FF/76A9FA?text=MP"
+                />
+            </div>
+        </section>
+        <section className="py-20 px-4 text-center"><h2 className="text-4xl font-bold text-white mb-6">Ready to Go Viral?</h2><button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Get Started for Free</button></section>
+    </div>
+);
 
 // --- Loading Skeleton Component ---
 const SkeletonLoader = () => (<div className="mt-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 space-y-4 animate-pulse"><div className="h-8 bg-gray-700/50 rounded w-1/3"></div><div className="space-y-4"><div className="h-24 bg-gray-700/50 rounded"></div><div className="h-24 bg-gray-700/50 rounded"></div></div></div>);
@@ -199,7 +260,7 @@ const ResultsDisplay = ({ content, session, voiceProfile, onPerformanceSaved }) 
     );
 };
 
-// --- Calendar View Component (FIXED & ENHANCED) ---
+// --- Calendar View Component ---
 const CalendarView = ({ session, voiceProfile }) => {
     const [events, setEvents] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
@@ -464,7 +525,7 @@ const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
     );
 };
 
-// --- AI Coach Insights Component ---
+// --- AI Coach Insights Component (FIXED) ---
 const AICoachInsights = ({ session, refreshKey }) => {
     const [insights, setInsights] = useState([]);
     const [loading, setLoading] = useState(true);
