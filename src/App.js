@@ -41,8 +41,7 @@ const HashtagIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="
 const PlayIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>;
 const LoadingSpinner = () => <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>;
 const VoiceIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z" fill="currentColor"></path></svg>;
-const BulbIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 22h6M12 18v4M9.31 15.69c.39.39 1.02.39 1.41 0l1.48-1.48c.31-.31.47-.72.47-1.13V12c0-.41-.16-.82-.47-1.13L10.72 9.39c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.5 12l-1.19 1.19c-.38.39-.38 1.03 0 1.42zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-const SparkleIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+const LightbulbIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 22h6M12 18v4M9.31 15.69c.39.39 1.02.39 1.41 0l1.48-1.48c.31-.31.47-.72.47-1.13V12c0-.41-.16-.82-.47-1.13L10.72 9.39c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.5 12l-1.19 1.19c-.38.39-.38 1.03 0 1.42zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 
 // --- Homepage Components ---
 const FeatureCard = ({ icon, title, children }) => ( <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm border border-white/10"><div className="text-brand-accent mb-3">{icon}</div><h3 className="text-xl font-bold text-white mb-2">{title}</h3><p className="text-brand-text-secondary">{children}</p></div>);
@@ -187,7 +186,7 @@ const ResultsDisplay = ({ content, session, voiceProfile, onPerformanceSaved }) 
     );
 };
 
-// --- Calendar View Component ---
+// --- Calendar View Component (UPGRADED) ---
 const CalendarView = ({ session, voiceProfile }) => {
     const [events, setEvents] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
@@ -195,7 +194,7 @@ const CalendarView = ({ session, voiceProfile }) => {
 
     const fetchEvents = useCallback(async () => {
         if (!session?.user) return;
-        const { data, error } = await supabase.from('generated_content').select('*').eq('user_id', session.user.id);
+        const { data, error } = await supabase.from('generated_content').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false });
         if (error) { console.error("Error fetching content for calendar:", error); } 
         else { setEvents(data); }
     }, [session]);
@@ -218,20 +217,42 @@ const CalendarView = ({ session, voiceProfile }) => {
         }
         return null;
     };
+    
+    const postedVideos = events.filter(e => e.is_posted);
 
     return (
         <>
             {selectedEvent && <BlueprintDetailModal blueprint={selectedEvent} closeModal={() => setSelectedEvent(null)} session={session} voiceProfile={voiceProfile} />}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <h2 className="text-3xl font-bold text-white mb-6">Content Calendar</h2>
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4">
-                    <Calendar
-                        onChange={setDate}
-                        value={date}
-                        onClickDay={handleDayClick}
-                        tileContent={tileContent}
-                        className="react-calendar-override"
-                    />
+                <h2 className="text-3xl font-bold text-white mb-6">Content Calendar & Performance</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4">
+                        <Calendar
+                            onChange={setDate}
+                            value={date}
+                            onClickDay={handleDayClick}
+                            tileContent={tileContent}
+                            className="react-calendar-override"
+                        />
+                    </div>
+                    <div className="lg:col-span-1 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                        <h3 className="text-xl font-bold text-white mb-4">Performance Log</h3>
+                        {postedVideos.length > 0 ? (
+                            <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                                {postedVideos.map(video => (
+                                    <div key={video.id} className="bg-black/20 p-4 rounded-lg">
+                                        <p className="font-bold text-white truncate">{video.topic}</p>
+                                        <div className="flex justify-between text-sm text-white/70 mt-2">
+                                            <span>Views: {video.views.toLocaleString()}</span>
+                                            <span>Likes: {video.likes.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-white/70">Track a video's performance to see your stats here.</p>
+                        )}
+                    </div>
                 </div>
             </div>
         </>
@@ -430,51 +451,53 @@ const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
     );
 };
 
-// --- Creator's Hub Component ---
-const CreatorsHub = () => {
-    const hubItems = [
-        {
-            icon: <BulbIcon />,
-            title: "Hook of the Day",
-            content: "The 3 biggest mistakes creators make with [your topic].",
-            color: "text-yellow-400"
-        },
-        {
-            icon: <SparkleIcon />,
-            title: "Quick Tip",
-            content: "Videos under 30 seconds have the highest completion rate. Keep it punchy!",
-            color: "text-green-400"
-        },
-        {
-            icon: <AudioIcon className="text-brand-accent"/>,
-            title: "Trending Audio",
-            content: "Upbeat instrumental pop is trending. Try it for your next educational video.",
-            color: "text-pink-400"
-        }
-    ];
-
-    const [currentItem, setCurrentItem] = useState(0);
+// --- AI Coach Insights Component ---
+const AICoachInsights = ({ session }) => {
+    const [insights, setInsights] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentItem(prev => (prev + 1) % hubItems.length);
-        }, 5000);
-        return () => clearInterval(timer);
-    }, [hubItems.length]);
+        const fetchInsights = async () => {
+            if (!session?.user) return;
+            setLoading(true);
+            try {
+                const response = await fetch('/.netlify/functions/get-insights', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: session.user.id }),
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setInsights(data.insights);
+                }
+            } catch (error) {
+                console.error("Failed to fetch insights:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchInsights();
+    }, [session]);
 
     return (
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 h-full">
-            <h3 className="text-lg font-bold text-white mb-4">Creator's Hub</h3>
+            <h3 className="text-lg font-bold text-white mb-4">AI Coach Insights</h3>
             <div className="relative h-40">
-                {hubItems.map((item, index) => (
-                    <div key={index} className={`absolute w-full transition-opacity duration-500 ${index === currentItem ? 'opacity-100' : 'opacity-0'}`}>
-                        <div className={`flex items-center gap-3 mb-2 ${item.color}`}>
-                            {item.icon}
-                            <h4 className="font-semibold">{item.title}</h4>
+                {loading ? (
+                    <p className="text-white/70">Analyzing your performance...</p>
+                ) : insights.length > 0 ? (
+                    insights.map((insight, index) => (
+                        <div key={index}>
+                            <div className="flex items-center gap-3 mb-2 text-yellow-400">
+                                <LightbulbIcon />
+                                <h4 className="font-semibold">{insight.title}</h4>
+                            </div>
+                            <p className="text-white/80 text-sm" dangerouslySetInnerHTML={{ __html: insight.text }} />
                         </div>
-                        <p className="text-white/80 text-sm">{item.content}</p>
-                    </div>
-                ))}
+                    ))
+                ) : (
+                    <p className="text-white/70 text-sm">Track at least 3 videos to unlock your personalized AI insights!</p>
+                )}
             </div>
         </div>
     );
@@ -603,7 +626,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
                         <p className="text-5xl font-bold text-white">{profile ? profile.credits : '0'}</p>
                         <button onClick={() => setShowBuyCreditsModal(true)} className="w-full mt-4 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-lg transition-colors">Buy More Credits</button>
                     </div>
-                    <CreatorsHub />
+                    <AICoachInsights session={session} />
                 </div>
             </div>
         </div>
