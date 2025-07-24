@@ -51,7 +51,7 @@ const HomePage = ({ setShowAuthModal }) => ( <div className="w-full"><section cl
 // --- Loading Skeleton Component ---
 const SkeletonLoader = () => (<div className="mt-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 space-y-4 animate-pulse"><div className="h-8 bg-gray-700/50 rounded w-1/3"></div><div className="space-y-4"><div className="h-24 bg-gray-700/50 rounded"></div><div className="h-24 bg-gray-700/50 rounded"></div></div></div>);
 
-// --- Blueprint Detail Modal (FIXED) ---
+// --- Blueprint Detail Modal ---
 const BlueprintDetailModal = ({ content, closeModal, session, voiceProfile, onPerformanceSaved }) => { 
     if (!content) return null; 
     return ( 
@@ -465,7 +465,7 @@ const BuyCreditsModal = ({ setShowBuyCreditsModal, session }) => {
 };
 
 // --- AI Coach Insights Component ---
-const AICoachInsights = ({ session }) => {
+const AICoachInsights = ({ session, refreshKey }) => {
     const [insights, setInsights] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -490,7 +490,7 @@ const AICoachInsights = ({ session }) => {
             }
         };
         fetchInsights();
-    }, [session]);
+    }, [session, refreshKey]);
 
     return (
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 h-full">
@@ -517,7 +517,7 @@ const AICoachInsights = ({ session }) => {
 };
 
 // --- Dashboard Component ---
-const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voiceProfile }) => {
+const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voiceProfile, onContentTracked }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [generatedContent, setGeneratedContent] = useState(null);
     const [wizardStep, setWizardStep] = useState(1);
@@ -567,6 +567,11 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
             setIsLoading(false);
         }
     }, [topic, goal, tone, audience, profile, session, setProfile, wizardStep, setShowBuyCreditsModal, addToast]);
+    
+    const handlePerformanceSaved = () => {
+        setGeneratedContent(null);
+        onContentTracked();
+    }
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -628,7 +633,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
                         )}
                     </div>
                     {isLoading && <SkeletonLoader />}
-                    {generatedContent && <ResultsDisplay content={generatedContent} session={session} voiceProfile={voiceProfile} onPerformanceSaved={() => setGeneratedContent(null)} />}
+                    {generatedContent && <ResultsDisplay content={generatedContent} session={session} voiceProfile={voiceProfile} onPerformanceSaved={handlePerformanceSaved} />}
                 </div>
                 <div className="lg:col-span-1 space-y-8">
                     <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
@@ -639,7 +644,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
                         <p className="text-5xl font-bold text-white">{profile ? profile.credits : '0'}</p>
                         <button onClick={() => setShowBuyCreditsModal(true)} className="w-full mt-4 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-lg transition-colors">Buy More Credits</button>
                     </div>
-                    <AICoachInsights session={session} />
+                    <AICoachInsights session={session} refreshKey={profile?.credits} />
                 </div>
             </div>
         </div>
@@ -655,6 +660,11 @@ const App = () => {
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
     const [activeView, setActiveView] = useState('dashboard');
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const handleContentTracked = () => {
+        setRefreshKey(prev => prev + 1);
+    };
 
     useEffect(() => {
         setProfileLoading(true);
@@ -734,7 +744,7 @@ const App = () => {
                                     <button onClick={() => setActiveView('account')} className={`px-4 py-3 font-semibold ${activeView === 'account' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Account</button>
                                 </div>
                             </nav>
-                            {activeView === 'dashboard' && <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} />}
+                            {activeView === 'dashboard' && <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} onContentTracked={handleContentTracked} />}
                             {activeView === 'calendar' && <CalendarView session={session} voiceProfile={voiceProfile} />}
                             {activeView === 'account' && <AccountView session={session} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />}
                         </>
