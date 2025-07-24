@@ -1,9 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* --- NEW DYNAMIC BACKGROUND --- */
 body {
-  background-color: #120F1A; /* Set our primary background color */
+    background: linear-gradient(-45deg, #1e1b4b, #312e81, #4f46e5, #000000);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* --- Custom styles for react-calendar to match our new theme --- */
+.react-calendar-override {
+    @apply bg-transparent border-none text-white;
+}
+.react-calendar-override .react-calendar__navigation button {
+    @apply text-white font-bold;
+}
+.react-calendar-override .react-calendar__month-view__weekdays__weekday {
+    @apply text-brand-text-secondary font-semibold;
+}
+.react-calendar-override .react-calendar__tile {
+    @apply text-white rounded-lg;
+}
+.react-calendar-override .react-calendar__tile:enabled:hover,
+.react-calendar-override .react-calendar__tile:enabled:focus {
+    @apply bg-white/10;
+}
+.react-calendar-override .react-calendar__tile--now {
+    @apply bg-brand-accent/20 text-brand-accent font-bold;
+}
+.react-calendar-override .react-calendar__tile--active {
+    @apply bg-brand-accent text-black font-bold;
 }
