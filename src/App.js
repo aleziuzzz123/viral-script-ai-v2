@@ -51,8 +51,21 @@ const HomePage = ({ setShowAuthModal }) => ( <div className="w-full"><section cl
 // --- Loading Skeleton Component ---
 const SkeletonLoader = () => (<div className="mt-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 space-y-4 animate-pulse"><div className="h-8 bg-gray-700/50 rounded w-1/3"></div><div className="space-y-4"><div className="h-24 bg-gray-700/50 rounded"></div><div className="h-24 bg-gray-700/50 rounded"></div></div></div>);
 
-// --- Blueprint Detail Modal ---
-const BlueprintDetailModal = ({ blueprint, closeModal, session, voiceProfile }) => { if (!blueprint) return null; return ( <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4"><div className="bg-white/10 border-white/20 rounded-2xl p-8 max-w-3xl w-full relative"><button onClick={closeModal} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button><h3 className="text-2xl font-bold text-center text-white mb-4">Blueprint Details</h3><div className="max-h-[70vh] overflow-y-auto"><ResultsDisplay content={blueprint} session={session} voiceProfile={voiceProfile} /></div></div></div>);};
+// --- Blueprint Detail Modal (FIXED) ---
+const BlueprintDetailModal = ({ content, closeModal, session, voiceProfile, onPerformanceSaved }) => { 
+    if (!content) return null; 
+    return ( 
+        <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white/10 border-white/20 rounded-2xl p-8 max-w-3xl w-full relative">
+                <button onClick={closeModal} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+                <h3 className="text-2xl font-bold text-center text-white mb-4">Blueprint Details</h3>
+                <div className="max-h-[70vh] overflow-y-auto">
+                    <ResultsDisplay content={content} session={session} voiceProfile={voiceProfile} onPerformanceSaved={onPerformanceSaved} />
+                </div>
+            </div>
+        </div>
+    );
+};
 
 // --- Schedule Modal ---
 const ScheduleModal = ({ blueprint, session, setShow, onScheduled }) => { const [date, setDate] = useState(new Date().toISOString().split('T')[0]); const [saving, setSaving] = useState(false); const { addToast } = useToast(); const handleSave = async () => { setSaving(true); const { error } = await supabase.from('scheduled_posts').insert({ user_id: session.user.id, scheduled_for: date, title: blueprint.hooks[0].text, blueprint: blueprint, }); if (error) { addToast('Error scheduling post: ' + error.message, 'error'); } else { addToast('Post scheduled successfully!', 'success'); setShow(false); onScheduled(); } setSaving(false); }; return ( <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4"><div className="bg-white/10 border-white/20 rounded-2xl p-8 max-w-md w-full relative"><button onClick={() => setShow(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button><h3 className="text-2xl font-bold text-center text-white mb-4">Schedule Blueprint</h3><p className="text-white/70 text-center mb-6">Choose a date to add this to your content calendar.</p><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-black/20 border-white/20 rounded-lg p-3 text-white" /><button onClick={handleSave} disabled={saving} className="w-full mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-lg">{saving ? 'Saving...' : 'Add to Calendar'}</button></div></div>);};
@@ -186,7 +199,7 @@ const ResultsDisplay = ({ content, session, voiceProfile, onPerformanceSaved }) 
     );
 };
 
-// --- Calendar View Component (FIXED) ---
+// --- Calendar View Component (FIXED & ENHANCED) ---
 const CalendarView = ({ session, voiceProfile }) => {
     const [events, setEvents] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
@@ -222,7 +235,7 @@ const CalendarView = ({ session, voiceProfile }) => {
 
     return (
         <>
-            {selectedEvent && <BlueprintDetailModal blueprint={selectedEvent} closeModal={() => setSelectedEvent(null)} session={session} voiceProfile={voiceProfile} />}
+            {selectedEvent && <BlueprintDetailModal content={selectedEvent} closeModal={() => setSelectedEvent(null)} session={session} voiceProfile={voiceProfile} onPerformanceSaved={fetchEvents} />}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <h2 className="text-3xl font-bold text-white mb-6">Content Calendar & Performance</h2>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -240,13 +253,13 @@ const CalendarView = ({ session, voiceProfile }) => {
                         {postedVideos.length > 0 ? (
                             <div className="space-y-4 max-h-[400px] overflow-y-auto">
                                 {postedVideos.map(video => (
-                                    <div key={video.id} className="bg-black/20 p-4 rounded-lg">
+                                    <button key={video.id} onClick={() => setSelectedEvent(video)} className="w-full text-left bg-black/20 hover:bg-black/40 p-4 rounded-lg transition-colors">
                                         <p className="font-bold text-white truncate">{video.topic}</p>
                                         <div className="flex justify-between text-sm text-white/70 mt-2">
                                             <span>Views: {video.views.toLocaleString()}</span>
                                             <span>Likes: {video.likes.toLocaleString()}</span>
                                         </div>
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
                         ) : (
