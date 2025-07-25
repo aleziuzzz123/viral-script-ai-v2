@@ -2,9 +2,9 @@
 const fetch = require('node-fetch');
 
 /**
- * Netlify serverless function to analyze video frames for virality.
+ * Netlify serverless function to analyze video frames for virality using the OpenAI API.
  * This function receives an array of base64-encoded image frames,
- * sends them to the Google Gemini API for analysis, and returns a
+ * sends them to the OpenAI GPT-4o model for analysis, and returns a
  * structured JSON object with a virality score and improvement suggestions.
  */
 exports.handler = async function (event, context) {
@@ -13,9 +13,10 @@ exports.handler = async function (event, context) {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
 
-  const { GEMINI_API_KEY } = process.env;
-  if (!GEMINI_API_KEY) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'GEMINI_API_KEY is not configured.' }) };
+  // IMPORTANT: This now uses OPENAI_API_KEY
+  const { OPENAI_API_KEY } = process.env;
+  if (!OPENAI_API_KEY) {
+    return { statusCode: 500, body: JSON.stringify({ error: 'OPENAI_API_KEY is not configured.' }) };
   }
 
   try {
@@ -24,10 +25,10 @@ exports.handler = async function (event, context) {
       return { statusCode: 400, body: JSON.stringify({ error: 'Bad Request: "frames" array is missing or empty.' }) };
     }
 
-    // 2. Prepare the request for the Gemini API
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // 2. Prepare the request for the OpenAI API
+    const API_URL = 'https://api.openai.com/v1/chat/completions';
     
-    // This prompt is adapted from your AI Studio project to guide the AI's analysis.
+    // This prompt is adapted for the OpenAI model.
     const prompt = `
       Analyze these sequential video frames from a short-form video (e.g., TikTok, Reel, Short).
       My goal is to maximize the video's virality. Based on these frames, provide a comprehensive analysis.
@@ -38,74 +39,54 @@ exports.handler = async function (event, context) {
       - **Pacing & Storytelling:** Do the frames suggest a clear story or progression? Does the pacing feel right for a short-form video?
       - **Emotional Impact:** Does the content evoke strong emotions (e.g., humor, surprise, inspiration, controversy)?
 
-      Return your analysis strictly in the provided JSON format. The virality score should be a direct reflection of these factors.
+      Return your analysis strictly in a JSON object with the following keys: "virality_score", "viral_potential", "what_works", "improvements".
     `;
 
-    // Map the base64 strings to the format the Gemini API expects.
-    const imageParts = frames.map(frame => ({
-      inline_data: {
-        mime_type: 'image/jpeg',
-        data: frame,
+    // Map the base64 strings to the format the OpenAI Vision API expects.
+    const imageMessages = frames.map(frame => ({
+      type: 'image_url',
+      image_url: {
+        url: `data:image/jpeg;base64,${frame}`,
       },
     }));
 
-    // This schema ensures the AI returns a clean, predictable JSON object.
-    const responseSchema = {
-      type: 'OBJECT',
-      properties: {
-        virality_score: {
-          type: 'INTEGER',
-          description: "A score from 0 to 100 representing the video's likelihood of going viral."
-        },
-        viral_potential: {
-          type: 'STRING',
-          enum: ["Low", "Medium", "High"],
-          description: "An overall assessment of the video's potential."
-        },
-        what_works: {
-            type: 'ARRAY',
-            description: "A list of 2-3 bullet points highlighting the video's strengths.",
-            items: { type: 'STRING' }
-        },
-        improvements: {
-          type: 'ARRAY',
-          description: "An array of 2-3 concrete suggestions to improve the video's virality.",
-          items: { type: 'STRING' }
-        }
-      },
-      required: ["virality_score", "viral_potential", "what_works", "improvements"]
-    };
-
     const requestBody = {
-      contents: [{
-        parts: [{ text: prompt }, ...imageParts]
-      }],
-      generation_config: {
-        response_mime_type: "application/json",
-        response_schema: responseSchema,
-        temperature: 0.6,
-      }
+      model: "gpt-4o", // Using the latest vision model
+      response_format: { "type": "json_object" }, // Enable JSON mode
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            ...imageMessages
+          ]
+        }
+      ],
+      max_tokens: 1000,
     };
 
-    // 3. Call the Gemini API
+    // 3. Call the OpenAI API
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
       body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error('Gemini API Error:', errorBody);
+      console.error('OpenAI API Error:', errorBody);
       return { statusCode: response.status, body: JSON.stringify({ error: `AI service failed: ${errorBody}` }) };
     }
 
     const data = await response.json();
 
     // 4. Process and return the response
-    if (data.candidates && data.candidates.length > 0) {
-      const rawText = data.candidates[0].content.parts[0].text;
-      const cleanedJson = JSON.parse(rawText);
+    if (data.choices && data.choices.length > 0) {
+      const content = data.choices[0].message.content;
+      const cleanedJson = JSON.parse(content);
       return {
         statusCode: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -119,4 +100,3 @@ exports.handler = async function (event, context) {
     console.error('Error in analyze-video function:', error);
     return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
-};
