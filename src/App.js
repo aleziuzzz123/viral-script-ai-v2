@@ -746,7 +746,16 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
     const [goal, setGoal] = useState('Go Viral / Maximize Reach');
     const [tone, setTone] = useState('Engaging');
     const [audience, setAudience] = useState('');
+    const [selectedPlatforms, setSelectedPlatforms] = useState(['TikTok']);
     const { addToast } = useToast();
+
+    const togglePlatform = (platform) => {
+        setSelectedPlatforms(prev =>
+            prev.includes(platform)
+                ? prev.filter(p => p !== platform)
+                : [...prev, platform]
+        );
+    };
 
     const trendingTopics = [ "The biggest myth about fitness", "3 AI tools that feel illegal to know", "A simple productivity hack that saved me 10 hours a week" ];
     const handleTopicClick = (selectedTopic) => { setTopic(selectedTopic); setWizardStep(2); };
@@ -766,7 +775,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
             const response = await fetch('/.netlify/functions/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic, goal, tone, audience, userId: session.user.id }),
+                body: JSON.stringify({ topic, goal, tone, audience, platforms: selectedPlatforms, userId: session.user.id }),
             });
             if (!response.ok) throw new Error('AI failed to generate content.');
             const blueprintData = await response.json();
@@ -787,7 +796,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
         } finally {
             setIsLoading(false);
         }
-    }, [topic, goal, tone, audience, profile, session, setProfile, wizardStep, setShowBuyCreditsModal, addToast]);
+    }, [topic, goal, tone, audience, selectedPlatforms, profile, session, setProfile, wizardStep, setShowBuyCreditsModal, addToast]);
     
     const handlePerformanceSaved = () => {
         setGeneratedContent(null);
@@ -830,6 +839,22 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
                         {wizardStep === 2 && (
                             <div className="space-y-6 text-left animate-fade-in mt-6">
                                 <p className="text-white/70">Topic: <span className="font-bold text-white">{topic}</span></p>
+                                
+                                <div>
+                                    <label className="font-semibold text-white block mb-2">2. Select Target Platforms</label>
+                                    <div className="flex gap-4">
+                                        <button onClick={() => togglePlatform('TikTok')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${selectedPlatforms.includes('TikTok') ? 'bg-blue-500/20 border-blue-400 text-white' : 'bg-white/10 border-transparent text-white/70 hover:bg-white/20'}`}>
+                                            <TikTokIcon /> TikTok
+                                        </button>
+                                        <button onClick={() => togglePlatform('YouTube')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${selectedPlatforms.includes('YouTube') ? 'bg-red-500/20 border-red-400 text-white' : 'bg-white/10 border-transparent text-white/70 hover:bg-white/20'}`}>
+                                            <YouTubeIcon /> YouTube
+                                        </button>
+                                        <button onClick={() => togglePlatform('Instagram')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${selectedPlatforms.includes('Instagram') ? 'bg-pink-500/20 border-pink-400 text-white' : 'bg-white/10 border-transparent text-white/70 hover:bg-white/20'}`}>
+                                            <InstagramIcon /> Instagram
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <div>
                                     <label className="font-semibold text-white block mb-2">What is your primary goal?</label>
                                     <select value={goal} onChange={(e) => setGoal(e.target.value)} className="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white">
