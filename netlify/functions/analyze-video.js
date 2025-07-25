@@ -52,7 +52,7 @@ exports.handler = async function (event, context) {
           }
         ],
         "creative_suggestions": {
-          "alternative_hooks": [string], // An array of 3 specific, ready-to-use alternative hook ideas.
+          "alternative_hooks": [string], // An array of 2-3 specific, ready-to-use alternative hook ideas.
           "thumbnail_text": string, // A compelling text overlay suggestion for the first frame/thumbnail.
           "audio_suggestion": string // A suggestion for the *type* of trending audio that would fit the video's mood.
         }
