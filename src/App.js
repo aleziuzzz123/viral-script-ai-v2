@@ -1107,6 +1107,7 @@ const App = () => {
     const [refreshKey, setRefreshKey] = useState(0);
    
     const [currentPage, setCurrentPage] = useState('home');
+    const { addToast } = useToast(); // <-- FIX: Call hook at the top level
 
     const navigate = (page) => {
         setCurrentPage(page);
@@ -1167,12 +1168,11 @@ const App = () => {
                         <button onClick={() => setActiveView('account')} className={`px-4 py-3 font-semibold ${activeView === 'account' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Account</button>
                     </div>
                 </nav>
-                <ToastProvider>
-                    {activeView === 'dashboard' && <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} onContentTracked={handleContentTracked} refreshKey={refreshKey} />}
-                    {activeView === 'analyzer' && <ViralVideoAnalyzer session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} addToast={useToast().addToast} />}
-                    {activeView === 'calendar' && <CalendarView session={session} voiceProfile={voiceProfile} />}
-                    {activeView === 'account' && <AccountView session={session} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />}
-                </ToastProvider>
+                {/* FIX: Removed redundant ToastProvider. The one at the root is sufficient. */}
+                {activeView === 'dashboard' && <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} onContentTracked={handleContentTracked} refreshKey={refreshKey} />}
+                {activeView === 'analyzer' && <ViralVideoAnalyzer session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} addToast={addToast} />}
+                {activeView === 'calendar' && <CalendarView session={session} voiceProfile={voiceProfile} />}
+                {activeView === 'account' && <AccountView session={session} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />}
             </>
         ) : (
             <HomePage setShowAuthModal={setShowAuthModal} />
