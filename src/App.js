@@ -161,13 +161,10 @@ const HomePage = ({ setShowAuthModal }) => (
                 <div className="mt-10 border-2 border-dashed border-white/50 rounded-lg px-8 py-4 max-w-3xl">
                     <p className="text-lg text-white/90">Leverage the world's most advanced AI scriptwriter - and finally convert your ideas into REAL views, leads, and sales.</p>
                 </div>
-                <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-full max-w-lg h-auto z-20 pointer-events-none">
-                    <img src="/images/hero-character-v2.png" alt="Confident content creator presenting" />
-                </div>
             </section>
             
             {/* --- Platforms Section --- */}
-            <section className="pt-32 pb-12 bg-black/10">
+            <section className="py-12 bg-black/10">
                 <p className="text-center text-white/50 text-sm font-semibold tracking-widest">WORKS WITH YOUR FAVORITE PLATFORMS</p>
                 <div className="flex justify-center items-center gap-12 mt-4">
                     <p className="text-2xl font-bold text-white">TikTok</p>
@@ -195,6 +192,21 @@ const HomePage = ({ setShowAuthModal }) => (
                     </div>
                     <div className="w-1/2">
                         <img src="/images/problem-character-v2.png" alt="Frustrated creator" className="w-full h-auto" />
+                    </div>
+                </div>
+            </section>
+
+            {/* --- NEW SOLUTION SECTION --- */}
+            <section className="relative py-20 px-4 overflow-hidden">
+                <div className="relative z-10 max-w-4xl mx-auto flex flex-row-reverse items-center gap-8">
+                    <div className="w-1/2">
+                        <h2 className="text-4xl font-bold text-white mb-6">Now Imagine Turning <span className="text-purple-400">Viewers Into Loyal Followers...</span> Instantly</h2>
+                        <p className="text-lg text-brand-text-secondary space-y-4">
+                           What if your audience didn't just scroll away... but opted in, got nurtured, and became paying customers? That's the magic of Viral Script AI. It captures interest when it's at its peak-and transforms curious viewers into subscribers who want to hear from you.
+                        </p>
+                    </div>
+                    <div className="w-1/2">
+                        <img src="/images/hero-character-v2.png" alt="Confident creator" className="w-full h-auto" />
                     </div>
                 </div>
             </section>
