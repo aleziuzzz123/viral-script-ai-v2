@@ -5,6 +5,7 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './App.css';
+import AbstractCanvas from './AbstractCanvas'; // --- NEW: Import the canvas component
 
 // --- Toast Notification System ---
 const ToastContext = createContext();
@@ -66,77 +67,79 @@ const TestimonialCard = ({ quote, name, title, avatarUrl }) => (
 );
 
 const HomePage = ({ setShowAuthModal }) => ( 
-    <div className="w-full overflow-hidden">
-        <section className="relative text-center py-20 md:py-32 px-4">
-            <img src="/images/abtract1.png" alt="Abstract background shape" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-6xl h-auto opacity-30 z-0" />
-            <div className="relative z-10 max-w-4xl mx-auto">
-                <h1 className="text-5xl md:text-7xl font-extrabold text-white">Stop Guessing. <span className="text-pink-500">Start Going Viral.</span></h1>
-                <p className="text-xl text-brand-text-secondary max-w-3xl mx-auto mt-6 mb-10">Generate complete viral video blueprints—from hooks and scripts to production notes and hashtags—in seconds with our advanced AI strategist.</p>
-                <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Generate Your First Blueprint Free</button>
-            </div>
-            <img src="/images/hero caracter.png" alt="Confident content creator" className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/4 w-full max-w-md h-auto z-20 hidden md:block" />
-        </section>
+    <div className="w-full overflow-hidden relative">
+        <AbstractCanvas />
+        <div className="relative z-10">
+            <section className="text-center py-20 md:py-32 px-4">
+                <div className="relative z-10 max-w-4xl mx-auto">
+                    <h1 className="text-5xl md:text-7xl font-extrabold text-white">Stop Guessing. <span className="text-pink-500">Start Going Viral.</span></h1>
+                    <p className="text-xl text-brand-text-secondary max-w-3xl mx-auto mt-6 mb-10">Generate complete viral video blueprints—from hooks and scripts to production notes and hashtags—in seconds with our advanced AI strategist.</p>
+                    <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Generate Your First Blueprint Free</button>
+                </div>
+                <img src="/images/hero caracter.png" alt="Confident content creator" className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/4 w-full max-w-md h-auto z-20 hidden md:block" />
+            </section>
 
-        <section className="py-12 bg-black/10 mt-32">
-            <p className="text-center text-white/50 text-sm font-semibold tracking-widest">WORKS WITH YOUR FAVORITE PLATFORMS</p>
-            <div className="flex justify-center items-center gap-12 mt-4">
-                <p className="text-2xl font-bold text-white">TikTok</p>
-                <p className="text-2xl font-bold text-white">YouTube</p>
-                <p className="text-2xl font-bold text-white">Instagram</p>
-            </div>
-        </section>
+            <section className="py-12 bg-black/10 mt-32">
+                <p className="text-center text-white/50 text-sm font-semibold tracking-widest">WORKS WITH YOUR FAVORITE PLATFORMS</p>
+                <div className="flex justify-center items-center gap-12 mt-4">
+                    <p className="text-2xl font-bold text-white">TikTok</p>
+                    <p className="text-2xl font-bold text-white">YouTube</p>
+                    <p className="text-2xl font-bold text-white">Instagram</p>
+                </div>
+            </section>
 
-        <section className="relative py-20 px-4">
-             <img src="/images/problem cararcter.png" alt="Frustrated creator" className="absolute top-0 right-0 h-96 opacity-80 z-0" />
-            <div className="relative z-10 max-w-4xl mx-auto">
-                <h2 className="text-4xl font-bold text-white mb-6">Are You Tired of Your Videos Getting <span className="text-red-500">Zero Views?</span></h2>
-                <ul className="space-y-4 text-lg text-brand-text-secondary max-w-2xl">
-                    <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Spending hours brainstorming ideas with no results.</span></li>
-                    <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Struggling to write hooks that grab attention.</span></li>
-                    <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Feeling invisible in a sea of other creators.</span></li>
-                </ul>
-            </div>
-        </section>
+            <section className="relative py-20 px-4">
+                 <img src="/images/problem cararcter.png" alt="Frustrated creator" className="absolute top-0 right-0 h-96 opacity-80 z-0" />
+                <div className="relative z-10 max-w-4xl mx-auto">
+                    <h2 className="text-4xl font-bold text-white mb-6">Are You Tired of Your Videos Getting <span className="text-red-500">Zero Views?</span></h2>
+                    <ul className="space-y-4 text-lg text-brand-text-secondary max-w-2xl">
+                        <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Spending hours brainstorming ideas with no results.</span></li>
+                        <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Struggling to write hooks that grab attention.</span></li>
+                        <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Feeling invisible in a sea of other creators.</span></li>
+                    </ul>
+                </div>
+            </section>
 
-        <section className="py-20 px-4 bg-white/5">
-            <h2 className="text-4xl font-bold text-center text-white mb-12">The <span className="text-green-400">All-In-One Solution</span> for Viral Content</h2>
-            <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
-                <FeatureGridItem iconUrl="/images/icon-hooks.png" title="AI-Scored Hooks">Don't just get hooks, get hooks scored by our AI for viral potential.</FeatureGridItem>
-                <FeatureGridItem iconUrl="/images/icon-script.png" title="Full AI Scriptwriting">Receive a complete script structured for maximum viewer retention.</FeatureGridItem>
-                <FeatureGridItem iconUrl="/images/icon-plan.png" title="Full Production Plan">Get shot-by-shot visual ideas, audio suggestions, and a hashtag strategy.</FeatureGridItem>
-                <FeatureGridItem iconUrl="/images/icon-voice.png" title="The Director's Cut">Hear your script in your own voice with AI-powered audio previews.</FeatureGridItem>
-                <FeatureGridItem iconUrl="/images/icon-calendar.png" title="Content Calendar">Plan your content and track your past ideas with ease.</FeatureGridItem>
-                <FeatureGridItem iconUrl="/images/icon-tracker.png" title="Performance Tracker">Log your video's performance to unlock personalized AI insights.</FeatureGridItem>
-            </div>
-        </section>
+            <section className="py-20 px-4 bg-white/5">
+                <h2 className="text-4xl font-bold text-center text-white mb-12">The <span className="text-green-400">All-In-One Solution</span> for Viral Content</h2>
+                <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
+                    <FeatureGridItem iconUrl="/images/icon-hooks.png" title="AI-Scored Hooks">Don't just get hooks, get hooks scored by our AI for viral potential.</FeatureGridItem>
+                    <FeatureGridItem iconUrl="/images/icon-script.png" title="Full AI Scriptwriting">Receive a complete script structured for maximum viewer retention.</FeatureGridItem>
+                    <FeatureGridItem iconUrl="/images/icon-plan.png" title="Full Production Plan">Get shot-by-shot visual ideas, audio suggestions, and a hashtag strategy.</FeatureGridItem>
+                    <FeatureGridItem iconUrl="/images/icon-voice.png" title="The Director's Cut">Hear your script in your own voice with AI-powered audio previews.</FeatureGridItem>
+                    <FeatureGridItem iconUrl="/images/icon-calendar.png" title="Content Calendar">Plan your content and track your past ideas with ease.</FeatureGridItem>
+                    <FeatureGridItem iconUrl="/images/icon-tracker.png" title="Performance Tracker">Log your video's performance to unlock personalized AI insights.</FeatureGridItem>
+                </div>
+            </section>
 
-        <section className="py-20 px-4">
-            <h2 className="text-4xl font-bold text-center text-white mb-12">Loved by Creators Everywhere</h2>
-            <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-                <TestimonialCard 
-                    quote="Viral Script AI has saved me hours of brainstorming every week. The 'Director's Cut' feature is a game-changer for my workflow!" 
-                    name="Sarah L." 
-                    title="TikTok Creator" 
-                    avatarUrl="/images/sarah-avatar.png"
-                />
-                <TestimonialCard 
-                    quote="The AI-scored hooks are incredibly accurate. My engagement has gone through the roof since I started using this tool." 
-                    name="Mike P." 
-                    title="YouTube Shorts Specialist" 
-                    avatarUrl="/images/mike-avatar.png"
-                />
-            </div>
-        </section>
+            <section className="py-20 px-4">
+                <h2 className="text-4xl font-bold text-center text-white mb-12">Loved by Creators Everywhere</h2>
+                <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
+                    <TestimonialCard 
+                        quote="Viral Script AI has saved me hours of brainstorming every week. The 'Director's Cut' feature is a game-changer for my workflow!" 
+                        name="Sarah L." 
+                        title="TikTok Creator" 
+                        avatarUrl="/images/sarah-avatar.png"
+                    />
+                    <TestimonialCard 
+                        quote="The AI-scored hooks are incredibly accurate. My engagement has gone through the roof since I started using this tool." 
+                        name="Mike P." 
+                        title="YouTube Shorts Specialist" 
+                        avatarUrl="/images/mike-avatar.png"
+                    />
+                </div>
+            </section>
 
-        <section className="py-20 px-4 text-center bg-gradient-to-t from-purple-900/50 to-transparent">
-            <h2 className="text-4xl font-bold text-white mb-6">Ready to Go Viral?</h2>
-            <p className="text-lg text-brand-text-secondary max-w-2xl mx-auto mb-8">Stop wasting time and start creating content that gets the attention it deserves. Your first blueprint is on us.</p>
-            <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Get Started for Free</button>
-            <div className="flex justify-center items-center gap-4 mt-8">
-                <img src="/images/garanee seal.png" alt="Guarantee Seal" className="h-24 w-24" />
-                <p className="text-white/70">30-Day Money-Back Guarantee</p>
-            </div>
-        </section>
+            <section className="py-20 px-4 text-center bg-gradient-to-t from-purple-900/50 to-transparent">
+                <h2 className="text-4xl font-bold text-white mb-6">Ready to Go Viral?</h2>
+                <p className="text-lg text-brand-text-secondary max-w-2xl mx-auto mb-8">Stop wasting time and start creating content that gets the attention it deserves. Your first blueprint is on us.</p>
+                <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Get Started for Free</button>
+                <div className="flex justify-center items-center gap-4 mt-8">
+                    <img src="/images/garanee seal.png" alt="Guarantee Seal" className="h-24 w-24" />
+                    <p className="text-white/70">30-Day Money-Back Guarantee</p>
+                </div>
+            </section>
+        </div>
     </div>
 );
 
@@ -865,4 +868,4 @@ const App = () => {
 };
 
 export default App;
- 
+
