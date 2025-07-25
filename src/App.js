@@ -43,7 +43,7 @@ const LoadingSpinner = () => <svg className="animate-spin h-5 w-5 text-white" xm
 const VoiceIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z" fill="currentColor"></path></svg>;
 const LightbulbIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 22h6M12 18v4M9.31 15.69c.39.39 1.02.39 1.41 0l1.48-1.48c.31-.31.47-.72.47-1.13V12c0-.41-.16-.82-.47-1.13L10.72 9.39c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.5 12l-1.19 1.19c-.38.39-.38 1.03 0 1.42zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 
-// --- Homepage Components (NEW LAYOUT - COMPLETE) ---
+// --- Homepage Components ---
 const FeatureGridItem = ({ iconUrl, title, children }) => (
     <div className="bg-white/5 p-6 rounded-2xl backdrop-blur-sm border border-white/10 text-center transform transition-transform hover:-translate-y-2">
         <img src={iconUrl} alt={`${title} icon`} className="h-20 w-20 mx-auto mb-4" />
@@ -65,11 +65,6 @@ const TestimonialCard = ({ quote, name, title, avatarUrl }) => (
         </div>
     </div>
 );
-
-import React, 'react'
-// ... (the rest of your imports)
-
-// --- (Your other components like FeatureGridItem, TestimonialCard, etc. remain here) ---
 
 const HomePage = ({ setShowAuthModal }) => ( 
     <div className="w-full overflow-hidden relative">
@@ -104,7 +99,6 @@ const HomePage = ({ setShowAuthModal }) => (
                 </div>
             </section>
             
-            {/* --- (The rest of your homepage sections will follow) --- */}
             {/* --- Platforms Section --- */}
             <section className="pt-32 pb-12 bg-black/10"> {/* Added padding-top to make space for character */}
                 <p className="text-center text-white/50 text-sm font-semibold tracking-widest">WORKS WITH YOUR FAVORITE PLATFORMS</p>
@@ -115,92 +109,12 @@ const HomePage = ({ setShowAuthModal }) => (
                 </div>
             </section>
             
-             {/* --- (Your Problem Section, Features, Testimonials, etc. would go here) --- */}
+            {/* --- Problem Section, Features, etc. would go here --- */}
 
         </div>
     </div>
 );
 
-            {/* --- Platforms Section --- */}
-            <section className="py-12 bg-black/10">
-                <p className="text-center text-white/50 text-sm font-semibold tracking-widest">WORKS WITH YOUR FAVORITE PLATFORMS</p>
-                <div className="flex justify-center items-center gap-12 mt-4">
-                    <p className="text-2xl font-bold text-white">TikTok</p>
-                    <p className="text-2xl font-bold text-white">YouTube</p>
-                    <p className="text-2xl font-bold text-white">Instagram</p>
-                </div>
-            </section>
-
-            {/* --- Problem Section --- */}
-            <section className="relative py-20 px-4 overflow-hidden">
-                <div className="absolute -top-20 -right-20 w-96 h-96 opacity-30">
-                     <img src="/images/abstract-wave-2.png" alt="Abstract Wave" />
-                </div>
-                <div className="absolute bottom-0 left-0 w-64 h-64 opacity-20 transform -translate-x-1/2 translate-y-1/2">
-                     <img src="/images/abstract-orb-2.png" alt="Abstract Orb" className="animate-pulse" />
-                </div>
-                <div className="relative z-10 max-w-4xl mx-auto flex items-center gap-8">
-                    <div className="w-1/2">
-                        <h2 className="text-4xl font-bold text-white mb-6">Are You Tired of Your Videos Getting <span className="text-red-500">Zero Views?</span></h2>
-                        <ul className="space-y-4 text-lg text-brand-text-secondary max-w-2xl">
-                            <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Spending hours brainstorming ideas with no results.</span></li>
-                            <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Struggling to write hooks that grab attention.</span></li>
-                            <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Feeling invisible in a sea of other creators.</span></li>
-                        </ul>
-                    </div>
-                    <div className="w-1/2">
-                        <img src="/images/problem-character-v2.png" alt="Frustrated creator" className="w-full h-auto" />
-                    </div>
-                </div>
-            </section>
-
-            {/* --- Features Section --- */}
-            <section className="py-20 px-4 bg-white/5">
-                <h2 className="text-4xl font-bold text-center text-white mb-12">The <span className="text-green-400">All-In-One Solution</span> for Viral Content</h2>
-                <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
-                    <FeatureGridItem iconUrl="/images/icon-hooks.png" title="AI-Scored Hooks">Don't just get hooks, get hooks scored by our AI for viral potential.</FeatureGridItem>
-                    <FeatureGridItem iconUrl="/images/icon-script.png" title="Full AI Scriptwriting">Receive a complete script structured for maximum viewer retention.</FeatureGridItem>
-                    <FeatureGridItem iconUrl="/images/icon-plan.png" title="Full Production Plan">Get shot-by-shot visual ideas, audio suggestions, and a hashtag strategy.</FeatureGridItem>
-                    <FeatureGridItem iconUrl="/images/icon-voice.png" title="The Director's Cut">Hear your script in your own voice with AI-powered audio previews.</FeatureGridItem>
-                    <FeatureGridItem iconUrl="/images/icon-calendar.png" title="Content Calendar">Plan your content and track your past ideas with ease.</FeatureGridItem>
-                    <FeatureGridItem iconUrl="/images/icon-tracker.png" title="Performance Tracker">Log your video's performance to unlock personalized AI insights.</FeatureGridItem>
-                </div>
-            </section>
-
-            {/* --- Testimonials Section --- */}
-            <section className="py-20 px-4">
-                <h2 className="text-4xl font-bold text-center text-white mb-12">Loved by Creators Everywhere</h2>
-                <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-                    <TestimonialCard 
-                        quote="Viral Script AI has saved me hours of brainstorming every week. The 'Director's Cut' feature is a game-changer for my workflow!" 
-                        name="Sarah L." 
-                        title="TikTok Creator" 
-                        avatarUrl="/images/sarah-avatar.png"
-                    />
-                    <TestimonialCard 
-                        quote="The AI-scored hooks are incredibly accurate. My engagement has gone through the roof since I started using this tool." 
-                        name="Mike P." 
-                        title="YouTube Shorts Specialist" 
-                        avatarUrl="/images/mike-avatar.png"
-                    />
-                </div>
-            </section>
-
-            {/* --- CTA Section --- */}
-            <section className="py-20 px-4 text-center bg-gradient-to-t from-purple-900/50 to-transparent">
-                <h2 className="text-4xl font-bold text-white mb-6">Ready to Go Viral?</h2>
-                <p className="text-lg text-brand-text-secondary max-w-2xl mx-auto mb-8">Stop wasting time and start creating content that gets the attention it deserves. Your first blueprint is on us.</p>
-                <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Get Started for Free</button>
-                <div className="flex justify-center items-center gap-4 mt-8">
-                    <img src="/images/garanee seal.png" alt="Guarantee Seal" className="h-24 w-24" />
-                    <p className="text-white/70">30-Day Money-Back Guarantee</p>
-                </div>
-            </section>
-        </div>
-    </div>
-);
-
-// --- (The rest of the file is identical to the previous full version) ---
 
 // --- Loading Skeleton Component ---
 const SkeletonLoader = () => (<div className="mt-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 space-y-4 animate-pulse"><div className="h-8 bg-gray-700/50 rounded w-1/3"></div><div className="space-y-4"><div className="h-24 bg-gray-700/50 rounded"></div><div className="h-24 bg-gray-700/50 rounded"></div></div></div>);
