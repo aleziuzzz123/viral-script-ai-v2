@@ -100,3 +100,4 @@ exports.handler = async function (event, context) {
     console.error('Error in analyze-video function:', error);
     return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
+};
