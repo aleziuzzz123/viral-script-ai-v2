@@ -917,6 +917,37 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
     );
 };
 
+// --- NEW: Dynamic Loader Component ---
+const DynamicLoader = () => {
+    const [text, setText] = useState('Extracting video frames...');
+    const analysisSteps = [
+        'Analyzing hook strength (first 3 seconds)...',
+        'Evaluating visual clarity and quality...',
+        'Assessing storytelling and pacing...',
+        'Calculating engagement potential...',
+        'Generating creative suggestions...',
+        'Finalizing your deep dive report...'
+    ];
+
+    useEffect(() => {
+        let index = 0;
+        const interval = setInterval(() => {
+            index = (index + 1) % analysisSteps.length;
+            setText(analysisSteps[index]);
+        }, 2000); // Change text every 2 seconds
+
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="flex flex-col items-center justify-center h-full text-white/70">
+            <LoadingSpinner />
+            <span className="ml-2 mt-4 text-lg font-semibold">{text}</span>
+        </div>
+    );
+};
+
+
 // --- NEW: ViralVideoAnalyzer Component ---
 const ViralVideoAnalyzer = ({ session, profile, setProfile, setShowBuyCreditsModal, addToast }) => {
     const [videoFile, setVideoFile] = useState(null);
@@ -936,7 +967,6 @@ const ViralVideoAnalyzer = ({ session, profile, setProfile, setShowBuyCreditsMod
         }
     };
     
-    // We are not using react-dropzone anymore, but keeping the logic for manual handling
     const handleManualDrop = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -984,8 +1014,8 @@ const ViralVideoAnalyzer = ({ session, profile, setProfile, setShowBuyCreditsMod
             });
 
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Analysis failed.');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Analysis failed.');
             }
 
             const data = await response.json();
@@ -994,6 +1024,7 @@ const ViralVideoAnalyzer = ({ session, profile, setProfile, setShowBuyCreditsMod
 
         } catch (err) {
             addToast(err.message, 'error');
+            // Refund credit if analysis failed after deduction
             const { error: refundError } = await supabase
                 .from('profiles')
                 .update({ credits: profile.credits })
@@ -1028,14 +1059,30 @@ const ViralVideoAnalyzer = ({ session, profile, setProfile, setShowBuyCreditsMod
         );
     };
 
+    const MetricMeter = ({ label, score }) => {
+        const percentage = score * 10;
+        return (
+            <div>
+                <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm font-medium text-white/80">{label}</span>
+                    <span className="text-sm font-bold text-white">{score}/10</span>
+                </div>
+                <div className="w-full bg-white/10 rounded-full h-2.5">
+                    <div className="bg-brand-accent h-2.5 rounded-full" style={{ width: `${percentage}%` }}></div>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-                <h2 className="text-3xl font-bold text-white">Viral Video Analyzer</h2>
-                <p className="text-white/70 mt-1 mb-6">Upload your video to get an AI-powered virality score and improvement tips.</p>
+                <h2 className="text-3xl font-bold text-white">Viral Video Deep Dive</h2>
+                <p className="text-white/70 mt-1 mb-6">Get a granular analysis of your video's viral potential.</p>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                    <div className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+                    {/* --- Left Column: Upload & Preview --- */}
+                    <div className="lg:col-span-2 space-y-4">
                         <label
                             htmlFor="video-upload-input"
                             ref={dropzoneRef}
@@ -1063,26 +1110,43 @@ const ViralVideoAnalyzer = ({ session, profile, setProfile, setShowBuyCreditsMod
                         )}
                     </div>
 
-                    <div className="bg-black/20 border border-white/10 rounded-2xl p-6 min-h-[300px]">
+                    {/* --- Right Column: Analysis Results --- */}
+                    <div className="lg:col-span-3 bg-black/20 border border-white/10 rounded-2xl p-6 min-h-[300px]">
                         <h3 className="text-xl font-bold text-white mb-4">AI Analysis</h3>
                         {isLoading ? (
-                            <div className="flex items-center justify-center h-full text-white/70"><LoadingSpinner /><span className="ml-2">AI is analyzing...</span></div>
+                            <DynamicLoader />
                         ) : analysisResult ? (
                             <div className="space-y-6">
-                                <ScoreCircle score={analysisResult.virality_score} />
-                                <div className="text-center">
-                                    <span className={`px-3 py-1 text-sm font-semibold rounded-full ${analysisResult.viral_potential === 'Low' ? 'bg-red-500/20 text-red-300' : analysisResult.viral_potential === 'Medium' ? 'bg-yellow-500/20 text-yellow-300' : 'bg-green-500/20 text-green-300'}`}>
-                                        {analysisResult.viral_potential} Potential
-                                    </span>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                                    <div>
+                                        <ScoreCircle score={analysisResult.virality_score} />
+                                    </div>
+                                    <div className="space-y-4">
+                                        <MetricMeter label="Hook Strength" score={analysisResult.key_metrics.hook_strength} />
+                                        <MetricMeter label="Visual Clarity" score={analysisResult.key_metrics.visual_clarity} />
+                                        <MetricMeter label="Engagement Potential" score={analysisResult.key_metrics.engagement_potential} />
+                                    </div>
                                 </div>
+                                
+                                <p className="text-sm text-white/80 italic text-center bg-white/5 p-3 rounded-md">{analysisResult.analysis_summary}</p>
+
+                                {analysisResult.detailed_breakdown.map((item, i) => (
+                                    <div key={i}>
+                                        <h4 className="font-semibold text-white mb-1">{item.area}</h4>
+                                        <p className="text-sm text-white/70 mb-2">{item.feedback}</p>
+                                        <p className="text-sm text-brand-accent bg-brand-accent/10 p-2 rounded-md"><strong>Suggestion:</strong> {item.suggestion}</p>
+                                    </div>
+                                ))}
+
                                 <div>
-                                    <h4 className="font-semibold text-white flex items-center gap-2 mb-2"><CheckCircleIcon /> What Works Well</h4>
-                                    <ul className="list-disc list-inside space-y-1 text-sm text-white/80">{analysisResult.what_works.map((item, i) => <li key={i}>{item}</li>)}</ul>
+                                    <h4 className="font-semibold text-white mb-2">Creative Suggestions</h4>
+                                    <div className="space-y-3 text-sm">
+                                        <p><strong className="text-purple-300">Alternative Hooks:</strong> "{analysisResult.creative_suggestions.alternative_hooks[0]}", "{analysisResult.creative_suggestions.alternative_hooks[1]}"</p>
+                                        <p><strong className="text-purple-300">Thumbnail Text:</strong> {analysisResult.creative_suggestions.thumbnail_text}</p>
+                                        <p><strong className="text-purple-300">Audio Suggestion:</strong> {analysisResult.creative_suggestions.audio_suggestion}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 className="font-semibold text-white flex items-center gap-2 mb-2"><XCircleIcon /> Areas for Improvement</h4>
-                                    <ul className="list-disc list-inside space-y-1 text-sm text-white/80">{analysisResult.improvements.map((item, i) => <li key={i}>{item}</li>)}</ul>
-                                </div>
+
                             </div>
                         ) : (
                             <div className="flex items-center justify-center h-full text-white/50"><p>Your analysis will appear here.</p></div>
@@ -1095,9 +1159,7 @@ const ViralVideoAnalyzer = ({ session, profile, setProfile, setShowBuyCreditsMod
 };
 
 
-// --- New App Structure to Fix Hook Error ---
-
-// AppContent contains all the logic and UI that needs access to the toast context.
+// --- Main App Component ---
 const AppContent = () => {
     const [session, setSession] = useState(null);
     const [profile, setProfile] = useState(null);
@@ -1108,7 +1170,7 @@ const AppContent = () => {
     const [activeView, setActiveView] = useState('dashboard');
     const [refreshKey, setRefreshKey] = useState(0);
     const [currentPage, setCurrentPage] = useState('home');
-    const { addToast } = useToast(); // Hook is now called inside a child of ToastProvider
+    const { addToast } = useToast();
 
     const navigate = (page) => {
         setCurrentPage(page);
