@@ -47,8 +47,6 @@ const TikTokIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="c
 const YouTubeIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M21.582 7.337c-.227-.81-.887-1.469-1.697-1.697C18.267 5.207 12 5.207 12 5.207s-6.267 0-7.885.433c-.81.228-1.47.887-1.697 1.697C2.002 8.954 2 12 2 12s.002 3.046.42 4.663c.227.81.887 1.469 1.697 1.697C5.733 18.793 12 18.793 12 18.793s6.267 0 7.885-.433c.81-.228 1.47-.887 1.697-1.697C21.998 15.046 22 12 22 12s-.002-3.046-.418-4.663zM9.75 14.86V9.14L15.22 12 9.75 14.86z"/></svg>;
 const InstagramIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"/></svg>;
 const UploadIcon = () => <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white/30 mx-auto mb-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>;
-const CheckCircleIcon = () => <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-green-300"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>;
-const XCircleIcon = () => <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-red-300"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>;
 
 // --- NEW PAGE COMPONENTS ---
 const PrivacyPolicyPage = ({ navigate }) => (
@@ -942,7 +940,7 @@ const DynamicLoader = () => {
         }, 2500);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [loadingSteps.length]); // ESLint FIX: Added dependency
 
     return (
         <div className="flex flex-col items-center justify-center h-full text-white/70 space-y-6">
