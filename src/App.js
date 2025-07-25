@@ -741,7 +741,6 @@ const AICoachInsights = ({ session, refreshKey }) => {
 const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voiceProfile, onContentTracked, refreshKey }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [generatedContent, setGeneratedContent] = useState(null);
-    const [wizardStep, setWizardStep] = useState(1);
     const [topic, setTopic] = useState('');
     const [goal, setGoal] = useState('Go Viral / Maximize Reach');
     const [tone, setTone] = useState('Engaging');
@@ -757,13 +756,10 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
         );
     };
 
-    const trendingTopics = [ "The biggest myth about fitness", "3 AI tools that feel illegal to know", "A simple productivity hack that saved me 10 hours a week" ];
-    const handleTopicClick = (selectedTopic) => { setTopic(selectedTopic); setWizardStep(2); };
-
     const handleGenerate = useCallback(async () => {
         if (!profile || profile.credits < 1) { setShowBuyCreditsModal(true); return; }
         if (!topic) { addToast('Please enter a topic.', 'error'); return; }
-        if (wizardStep === 1) { setWizardStep(2); return; }
+        if (selectedPlatforms.length === 0) { addToast('Please select at least one platform.', 'error'); return; }
 
         setIsLoading(true);
         setGeneratedContent(null);
@@ -789,14 +785,13 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
             if (saveError) throw saveError;
             
             setGeneratedContent(newContent);
-            setWizardStep(1);
             setTopic('');
         } catch (err) {
             addToast(err.message, 'error');
         } finally {
             setIsLoading(false);
         }
-    }, [topic, goal, tone, audience, selectedPlatforms, profile, session, setProfile, wizardStep, setShowBuyCreditsModal, addToast]);
+    }, [topic, goal, tone, audience, selectedPlatforms, profile, session, setProfile, setShowBuyCreditsModal, addToast]);
     
     const handlePerformanceSaved = () => {
         setGeneratedContent(null);
@@ -810,7 +805,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
                     <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 mb-8">
                             <div className="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-2xl font-bold text-white">{userInitial}</div>
                             <div>
                                 <h2 className="text-3xl font-bold text-white">Creator's Command Center</h2>
@@ -818,72 +813,38 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
                             </div>
                         </div>
                         
-                        {wizardStep === 1 && (
-                            <div className="mt-6">
-                                <label className="font-semibold text-lg text-white block mb-3">What's your video topic?</label>
-                                <div className="flex flex-col sm:flex-row gap-2">
-                                    <input type="text" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g., 'How to start a podcast'" className="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent" />
-                                    <button onClick={handleGenerate} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-3 px-6 rounded-lg whitespace-nowrap transition-transform transform hover:scale-105">Create Blueprint</button>
-                                </div>
-                                <div className="mt-6">
-                                    <p className="text-sm text-white/70 mb-3">Stuck? Try a trending topic:</p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {trendingTopics.map(t => (
-                                            <button key={t} onClick={() => handleTopicClick(t)} className="bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-3 py-1 rounded-full transition-colors">{t}</button>
-                                        ))}
-                                    </div>
+                        <div className="space-y-6">
+                            <div>
+                                <h3 className="text-xl font-bold text-white">1. Enter Your Video Idea</h3>
+                                <p className="text-white/70 mt-1">Be as specific or as broad as you like. The AI will handle the rest.</p>
+                                <textarea
+                                    value={topic}
+                                    onChange={(e) => setTopic(e.target.value)}
+                                    placeholder="e.g., A tutorial on how to make the perfect sourdough bread at home"
+                                    className="w-full mt-3 bg-black/20 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent h-24 resize-none"
+                                />
+                            </div>
+
+                            <div>
+                                <h3 className="text-xl font-bold text-white">2. Select Target Platforms</h3>
+                                <p className="text-white/70 mt-1">Choose where you want your video to go viral.</p>
+                                <div className="flex gap-4 mt-3">
+                                    <button onClick={() => togglePlatform('TikTok')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${selectedPlatforms.includes('TikTok') ? 'bg-blue-500/20 border-blue-400 text-white' : 'bg-white/10 border-transparent text-white/70 hover:bg-white/20'}`}>
+                                        <TikTokIcon /> TikTok
+                                    </button>
+                                    <button onClick={() => togglePlatform('YouTube')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${selectedPlatforms.includes('YouTube') ? 'bg-red-500/20 border-red-400 text-white' : 'bg-white/10 border-transparent text-white/70 hover:bg-white/20'}`}>
+                                        <YouTubeIcon /> YouTube
+                                    </button>
+                                    <button onClick={() => togglePlatform('Instagram')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${selectedPlatforms.includes('Instagram') ? 'bg-pink-500/20 border-pink-400 text-white' : 'bg-white/10 border-transparent text-white/70 hover:bg-white/20'}`}>
+                                        <InstagramIcon /> Instagram
+                                    </button>
                                 </div>
                             </div>
-                        )}
-
-                        {wizardStep === 2 && (
-                            <div className="space-y-6 text-left animate-fade-in mt-6">
-                                <p className="text-white/70">Topic: <span className="font-bold text-white">{topic}</span></p>
-                                
-                                <div>
-                                    <label className="font-semibold text-white block mb-2">2. Select Target Platforms</label>
-                                    <div className="flex gap-4">
-                                        <button onClick={() => togglePlatform('TikTok')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${selectedPlatforms.includes('TikTok') ? 'bg-blue-500/20 border-blue-400 text-white' : 'bg-white/10 border-transparent text-white/70 hover:bg-white/20'}`}>
-                                            <TikTokIcon /> TikTok
-                                        </button>
-                                        <button onClick={() => togglePlatform('YouTube')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${selectedPlatforms.includes('YouTube') ? 'bg-red-500/20 border-red-400 text-white' : 'bg-white/10 border-transparent text-white/70 hover:bg-white/20'}`}>
-                                            <YouTubeIcon /> YouTube
-                                        </button>
-                                        <button onClick={() => togglePlatform('Instagram')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${selectedPlatforms.includes('Instagram') ? 'bg-pink-500/20 border-pink-400 text-white' : 'bg-white/10 border-transparent text-white/70 hover:bg-white/20'}`}>
-                                            <InstagramIcon /> Instagram
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="font-semibold text-white block mb-2">What is your primary goal?</label>
-                                    <select value={goal} onChange={(e) => setGoal(e.target.value)} className="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white">
-                                        <option>Go Viral / Maximize Reach</option>
-                                        <option>Sell a Product / Service</option>
-                                        <option>Educate My Audience</option>
-                                        <option>Tell a Personal Story</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="font-semibold text-white block mb-2">What is the desired tone?</label>
-                                    <select value={tone} onChange={(e) => setTone(e.target.value)} className="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white">
-                                        <option>Engaging</option>
-                                        <option>Funny & Comedic</option>
-                                        <option>Inspirational & Motivational</option>
-                                        <option>Serious & Educational</option>
-                                        <option>Shocking & Controversial</option>
-                                    </select>
-                                </div>
-                                 <div>
-                                    <label className="font-semibold text-white block mb-2">Briefly describe your target audience.</label>
-                                    <input type="text" value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="e.g., 'Beginner entrepreneurs'" className="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white" />
-                                </div>
-                                <button onClick={handleGenerate} disabled={isLoading} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 rounded-lg text-lg flex items-center justify-center gap-2 transition-transform transform hover:scale-105">
-                                    {isLoading && <LoadingSpinner />}
-                                    {isLoading ? 'Generating...' : 'Generate My Custom Blueprint'}
-                                </button>
-                            </div>
-                        )}
+                            <button onClick={handleGenerate} disabled={isLoading} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 rounded-lg text-lg flex items-center justify-center gap-2 transition-transform transform hover:scale-105">
+                                {isLoading && <LoadingSpinner />}
+                                {isLoading ? 'Generating...' : 'Generate Viral Hooks'}
+                            </button>
+                        </div>
                     </div>
                     {isLoading && <SkeletonLoader />}
                     {generatedContent && <ResultsDisplay content={generatedContent} session={session} voiceProfile={voiceProfile} onPerformanceSaved={handlePerformanceSaved} />}
