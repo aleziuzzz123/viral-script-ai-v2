@@ -66,27 +66,60 @@ const TestimonialCard = ({ quote, name, title, avatarUrl }) => (
     </div>
 );
 
+import React, 'react'
+// ... (the rest of your imports)
+
+// --- (Your other components like FeatureGridItem, TestimonialCard, etc. remain here) ---
+
 const HomePage = ({ setShowAuthModal }) => ( 
     <div className="w-full overflow-hidden relative">
         <AbstractCanvas />
         <div className="relative z-10">
-            {/* --- Hero Section --- */}
-            <section className="relative text-center py-20 md:py-32 px-4 min-h-[80vh] flex flex-col justify-center">
-                <div className="absolute top-1/4 left-10 w-48 h-48 opacity-50">
-                    <img src="/images/abstract-orb-1.png" alt="Abstract Orb" className="animate-pulse" />
+            
+            {/* --- NEW HERO/HEADER SECTION --- */}
+            <section className="relative text-center py-20 md:py-24 px-4 flex flex-col items-center">
+                {/* Top Banner */}
+                <div className="bg-red-500 text-white font-semibold px-6 py-2 rounded-lg mb-8 shadow-lg">
+                    <span>Stop Guessing, Stop Wasting Time, &amp; Start Creating Scripts That Actually Work...</span>
                 </div>
-                <div className="absolute top-1/2 right-10 w-64 h-64 opacity-40">
-                    <img src="/images/abstract-wave-1.png" alt="Abstract Wave" className="animate-spin-slow" />
+
+                {/* Main Headline */}
+                <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight max-w-4xl">
+                    Revolutionary AI Tech Turns Any
+                    <span className="text-pink-500 px-2">Video Idea</span>
+                    Into Scroll-Stopping,
+                    <span className="bg-purple-500 px-2 rounded-md">AI-Scored Hooks</span>
+                    & Full Scripts
+                    <span className="text-yellow-400 px-2">All In Under 2 Minutes</span>
+                </h1>
+
+                {/* Sub-headline */}
+                <div className="mt-10 border-2 border-dashed border-white/50 rounded-lg px-8 py-4 max-w-3xl">
+                    <p className="text-lg text-white/90">Leverage the world's most advanced AI scriptwriter - and finally convert your ideas into REAL views, leads, and sales.</p>
                 </div>
-                <div className="relative z-10 max-w-4xl mx-auto">
-                    <h1 className="text-5xl md:text-7xl font-extrabold text-white">Stop Guessing. <span className="text-pink-500">Start Going Viral.</span></h1>
-                    <p className="text-xl text-brand-text-secondary max-w-3xl mx-auto mt-6 mb-10">Generate complete viral video blueprints—from hooks and scripts to production notes and hashtags—in seconds with our advanced AI strategist.</p>
-                    <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Generate Your First Blueprint Free</button>
-                </div>
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl h-auto z-20 pointer-events-none">
-                    <img src="/images/hero-character-v2.png" alt="Confident content creator" />
+                
+                {/* Character Image (Positioned at the bottom) */}
+                <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-full max-w-lg h-auto z-20 pointer-events-none">
+                    <img src="/images/hero-character-v2.png" alt="Confident content creator presenting" />
                 </div>
             </section>
+            
+            {/* --- (The rest of your homepage sections will follow) --- */}
+            {/* --- Platforms Section --- */}
+            <section className="pt-32 pb-12 bg-black/10"> {/* Added padding-top to make space for character */}
+                <p className="text-center text-white/50 text-sm font-semibold tracking-widest">WORKS WITH YOUR FAVORITE PLATFORMS</p>
+                <div className="flex justify-center items-center gap-12 mt-4">
+                    <p className="text-2xl font-bold text-white">TikTok</p>
+                    <p className="text-2xl font-bold text-white">YouTube</p>
+                    <p className="text-2xl font-bold text-white">Instagram</p>
+                </div>
+            </section>
+            
+             {/* --- (Your Problem Section, Features, Testimonials, etc. would go here) --- */}
+
+        </div>
+    </div>
+);
 
             {/* --- Platforms Section --- */}
             <section className="py-12 bg-black/10">
