@@ -1,110 +1,118 @@
 import React, { useRef, useEffect } from 'react';
+import * as THREE from 'three';
 
+// This component creates a dynamic, animated 3D abstract background using Three.js.
 const AbstractCanvas = () => {
-    const canvasRef = useRef(null);
+    const mountRef = useRef(null);
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        let animationFrameId;
+        // --- Basic Scene Setup ---
+        const currentMount = mountRef.current;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, currentMount.clientWidth / currentMount.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         
-        // Set canvas size
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        currentMount.appendChild(renderer.domElement);
 
-        const mouse = {
-            x: canvas.width / 2,
-            y: canvas.height / 2,
+        // --- Lighting ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 10, 7.5);
+        scene.add(directionalLight);
+        
+        const pointLight = new THREE.PointLight(0xff88ff, 1.5, 100);
+        pointLight.position.set(-5, -5, 5);
+        scene.add(pointLight);
+
+        // --- Geometry and Material ---
+        // Using Icosahedron for a more complex shape than a simple sphere
+        const geometry = new THREE.IcosahedronGeometry(1, 0); 
+        const material = new THREE.MeshStandardMaterial({
+            color: 0x8A2BE2, // A nice purple
+            emissive: 0xaa00aa,
+            emissiveIntensity: 0.1,
+            metalness: 0.8,
+            roughness: 0.2,
+            wireframe: true, // Gives it a cool, techy look
+        });
+
+        // --- Create and position multiple objects ---
+        const objects = [];
+        const numberOfObjects = 30;
+
+        for (let i = 0; i < numberOfObjects; i++) {
+            const mesh = new THREE.Mesh(geometry, material);
+            
+            // Position objects randomly in a larger volume
+            mesh.position.x = (Math.random() - 0.5) * 20;
+            mesh.position.y = (Math.random() - 0.5) * 20;
+            mesh.position.z = (Math.random() - 0.5) * 20;
+            
+            // Random rotation
+            mesh.rotation.x = Math.random() * 2 * Math.PI;
+            mesh.rotation.y = Math.random() * 2 * Math.PI;
+
+            // Store a random rotation speed for each object
+            mesh.userData.rotationSpeed = {
+                x: (Math.random() - 0.5) * 0.01,
+                y: (Math.random() - 0.5) * 0.01,
+            };
+
+            scene.add(mesh);
+            objects.push(mesh);
+        }
+
+        camera.position.z = 5;
+
+        // --- Mouse Interaction ---
+        const mouse = new THREE.Vector2();
+        const onMouseMove = (event) => {
+            // Normalize mouse position from -1 to +1
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         };
+        window.addEventListener('mousemove', onMouseMove);
 
-        window.addEventListener('mousemove', (event) => {
-            mouse.x = event.clientX;
-            mouse.y = event.clientY;
-        });
-        
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
+        // --- Animation Loop ---
+        const animate = () => {
+            requestAnimationFrame(animate);
 
-        class Particle {
-            constructor(x, y, radius, color) {
-                this.x = x;
-                this.y = y;
-                this.radius = radius;
-                this.color = color;
-                this.baseX = x;
-                this.baseY = y;
-                this.density = (Math.random() * 30) + 1;
-            }
+            // Animate objects
+            objects.forEach(obj => {
+                obj.rotation.x += obj.userData.rotationSpeed.x;
+                obj.rotation.y += obj.userData.rotationSpeed.y;
+            });
+            
+            // Animate camera based on mouse position for a subtle parallax effect
+            camera.position.x += (mouse.x * 2 - camera.position.x) * 0.02;
+            camera.position.y += (mouse.y * 2 - camera.position.y) * 0.02;
+            camera.lookAt(scene.position);
 
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.closePath();
-                ctx.fill();
-            }
-
-            update() {
-                let dx = mouse.x - this.x;
-                let dy = mouse.y - this.y;
-                let distance = Math.sqrt(dx * dx + dy * dy);
-                let forceDirectionX = dx / distance;
-                let forceDirectionY = dy / distance;
-                let maxDistance = 100;
-                let force = (maxDistance - distance) / maxDistance;
-                
-                if (distance < maxDistance) {
-                    this.x -= forceDirectionX * this.density * 0.6;
-                    this.y -= forceDirectionY * this.density * 0.6;
-                } else {
-                    if (this.x !== this.baseX) {
-                        let dx = this.x - this.baseX;
-                        this.x -= dx / 10;
-                    }
-                    if (this.y !== this.baseY) {
-                        let dy = this.y - this.baseY;
-                        this.y -= dy / 10;
-                    }
-                }
-                this.draw();
-            }
-        }
-
-        const particles = [];
-        const colors = ['#4f46e5', '#7c3aed', '#db2777'];
-        
-        function init() {
-            particles.length = 0;
-            for (let i = 0; i < 150; i++) {
-                const x = Math.random() * canvas.width;
-                const y = Math.random() * canvas.height;
-                const radius = Math.random() * 2 + 1;
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                particles.push(new Particle(x, y, radius, color));
-            }
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-            }
-            animationFrameId = requestAnimationFrame(animate);
-        }
-
-        init();
+            renderer.render(scene, camera);
+        };
         animate();
 
+        // --- Handle window resize ---
+        const onWindowResize = () => {
+            camera.aspect = currentMount.clientWidth / currentMount.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
+        };
+        window.addEventListener('resize', onWindowResize);
+
+        // --- Cleanup function ---
         return () => {
-            cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('mousemove', () => {});
-            window.removeEventListener('resize', () => {});
+            window.removeEventListener('resize', onWindowResize);
+            window.removeEventListener('mousemove', onMouseMove);
+            currentMount.removeChild(renderer.domElement);
         };
     }, []);
 
-    return <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full z-0 opacity-20" />;
+    return <div ref={mountRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }} />;
 };
 
 export default AbstractCanvas;
