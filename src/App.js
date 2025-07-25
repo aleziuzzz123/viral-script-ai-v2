@@ -6,7 +6,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './App.css';
 import AbstractCanvas from './AbstractCanvas';
-import { useVideoProcessor } from './useVideoProcessor'; // <-- IMPORT THE NEW HOOK
+import { useVideoProcessor } from './useVideoProcessor';
 
 // --- Toast Notification System ---
 const ToastContext = createContext();
@@ -1095,8 +1095,10 @@ const ViralVideoAnalyzer = ({ session, profile, setProfile, setShowBuyCreditsMod
 };
 
 
-// --- Main App Component ---
-const App = () => {
+// --- New App Structure to Fix Hook Error ---
+
+// AppContent contains all the logic and UI that needs access to the toast context.
+const AppContent = () => {
     const [session, setSession] = useState(null);
     const [profile, setProfile] = useState(null);
     const [voiceProfile, setVoiceProfile] = useState(null);
@@ -1105,9 +1107,8 @@ const App = () => {
     const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
     const [activeView, setActiveView] = useState('dashboard');
     const [refreshKey, setRefreshKey] = useState(0);
-   
     const [currentPage, setCurrentPage] = useState('home');
-    const { addToast } = useToast(); // <-- FIX: Call hook at the top level
+    const { addToast } = useToast(); // Hook is now called inside a child of ToastProvider
 
     const navigate = (page) => {
         setCurrentPage(page);
@@ -1154,7 +1155,7 @@ const App = () => {
         }
     }, [session]);
 
-    const renderContent = () => {
+    const renderMainContent = () => {
         if (currentPage === 'privacy') return <PrivacyPolicyPage navigate={navigate} />;
         if (currentPage === 'terms') return <TermsOfServicePage navigate={navigate} />;
        
@@ -1168,7 +1169,6 @@ const App = () => {
                         <button onClick={() => setActiveView('account')} className={`px-4 py-3 font-semibold ${activeView === 'account' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Account</button>
                     </div>
                 </nav>
-                {/* FIX: Removed redundant ToastProvider. The one at the root is sufficient. */}
                 {activeView === 'dashboard' && <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} onContentTracked={handleContentTracked} refreshKey={refreshKey} />}
                 {activeView === 'analyzer' && <ViralVideoAnalyzer session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} addToast={addToast} />}
                 {activeView === 'calendar' && <CalendarView session={session} voiceProfile={voiceProfile} />}
@@ -1180,52 +1180,58 @@ const App = () => {
     };
 
     return (
+        <div className="bg-brand-background text-brand-text-secondary min-h-screen font-sans flex flex-col">
+            {showAuthModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white/10 border border-white/20 rounded-2xl p-8 max-w-md w-full relative">
+                        <button onClick={() => setShowAuthModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+                        <h3 className="text-2xl font-bold text-center text-white mb-2">Your Blueprint is Ready!</h3>
+                        <p className="text-white/70 text-center mb-6">Create a free account to view it.</p>
+                        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google']} theme="dark" />
+                    </div>
+                </div>
+            )}
+           
+            {showBuyCreditsModal && <BuyCreditsModal setShowBuyCreditsModal={setShowBuyCreditsModal} session={session} />}
+
+            <header className="border-b border-white/10 sticky top-0 bg-black/30 backdrop-blur-lg z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                    <h1 onClick={() => navigate('home')} className="text-2xl font-bold text-white cursor-pointer">Viral Script AI</h1>
+                    {session ? (
+                        <div className="flex items-center gap-4">
+                            <span className="text-sm text-white/80">Credits: <span className="font-bold text-white">{profileLoading ? '...' : (profile ? profile.credits : 0)}</span></span>
+                            <button onClick={async () => { await supabase.auth.signOut(); navigate('home'); }} className="bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg text-sm border border-white/20">Logout</button>
+                        </div>
+                    ) : (
+                        <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-2 px-4 rounded-lg">Login / Sign Up</button>
+                    )}
+                </div>
+            </header>
+
+            <main className="flex-grow">
+                {renderMainContent()}
+            </main>
+
+            <footer className="w-full bg-black/20 border-t border-white/10 mt-16 py-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white/70">
+                    <div className="flex justify-center gap-6 mb-4">
+                        <button onClick={() => navigate('privacy')} className="hover:text-white">Privacy Policy</button>
+                        <button onClick={() => navigate('terms')} className="hover:text-white">Terms of Service</button>
+                    </div>
+                    <p>&copy; {new Date().getFullYear()} Viral Script AI. All rights reserved.</p>
+                </div>
+            </footer>
+        </div>
+    );
+}
+
+// The root App component now only provides the context.
+const App = () => {
+    return (
         <ToastProvider>
-            <div className="bg-brand-background text-brand-text-secondary min-h-screen font-sans flex flex-col">
-                {showAuthModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                        <div className="bg-white/10 border border-white/20 rounded-2xl p-8 max-w-md w-full relative">
-                            <button onClick={() => setShowAuthModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
-                            <h3 className="text-2xl font-bold text-center text-white mb-2">Your Blueprint is Ready!</h3>
-                            <p className="text-white/70 text-center mb-6">Create a free account to view it.</p>
-                            <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google']} theme="dark" />
-                        </div>
-                    </div>
-                )}
-               
-                {showBuyCreditsModal && <BuyCreditsModal setShowBuyCreditsModal={setShowBuyCreditsModal} session={session} />}
-
-                <header className="border-b border-white/10 sticky top-0 bg-black/30 backdrop-blur-lg z-40">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                        <h1 onClick={() => navigate('home')} className="text-2xl font-bold text-white cursor-pointer">Viral Script AI</h1>
-                        {session ? (
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm text-white/80">Credits: <span className="font-bold text-white">{profileLoading ? '...' : (profile ? profile.credits : 0)}</span></span>
-                                <button onClick={async () => { await supabase.auth.signOut(); navigate('home'); }} className="bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg text-sm border border-white/20">Logout</button>
-                            </div>
-                        ) : (
-                            <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-2 px-4 rounded-lg">Login / Sign Up</button>
-                        )}
-                    </div>
-                </header>
-
-                <main className="flex-grow">
-                    {renderContent()}
-                </main>
-
-                <footer className="w-full bg-black/20 border-t border-white/10 mt-16 py-8">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white/70">
-                        <div className="flex justify-center gap-6 mb-4">
-                            <button onClick={() => navigate('privacy')} className="hover:text-white">Privacy Policy</button>
-                            <button onClick={() => navigate('terms')} className="hover:text-white">Terms of Service</button>
-                        </div>
-                        <p>&copy; {new Date().getFullYear()} Viral Script AI. All rights reserved.</p>
-                    </div>
-                </footer>
-            </div>
+            <AppContent />
         </ToastProvider>
     );
 };
 
 export default App;
-
