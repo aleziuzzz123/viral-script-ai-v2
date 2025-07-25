@@ -144,121 +144,161 @@ const TestimonialCard = ({ quote, name, title, avatarUrl }) => (
     </div>
 );
 
-const HomePage = ({ setShowAuthModal }) => ( 
-    <div className="w-full overflow-hidden relative">
-        <AbstractCanvas />
-        <div className="relative z-10">
-            {/* --- HERO/HEADER SECTION --- */}
-            <section className="relative text-center py-20 md:py-24 px-4 flex flex-col items-center">
-                <div className="bg-red-500 text-white font-semibold px-6 py-2 rounded-lg mb-8 shadow-lg">
-                    <span>Stop Guessing, Stop Wasting Time, &amp; Start Creating Scripts That Actually Work...</span>
-                </div>
-                <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight max-w-4xl">
-                    Revolutionary AI Tech Turns Any
-                    <span className="text-pink-500 px-2">Video Idea</span>
-                    Into Scroll-Stopping,
-                    <span className="bg-purple-500 px-2 rounded-md">AI-Scored Hooks</span>
-                    & Full Scripts
-                    <span className="text-yellow-400 px-2">All In Under 2 Minutes</span>
-                </h1>
-                <div className="mt-10 border-2 border-dashed border-white/50 rounded-lg px-8 py-4 max-w-3xl">
-                    <p className="text-lg text-white/90">Leverage the world's most advanced AI scriptwriter - and finally convert your ideas into REAL views, leads, and sales.</p>
-                </div>
-            </section>
-            
-            {/* --- Platforms Section --- */}
-            <section className="py-12 bg-black/10">
-                <p className="text-center text-white/50 text-sm font-semibold tracking-widest">WORKS WITH YOUR FAVORITE PLATFORMS</p>
-                <div className="flex justify-center items-center gap-12 mt-4">
-                    <p className="text-2xl font-bold text-white">TikTok</p>
-                    <p className="text-2xl font-bold text-white">YouTube</p>
-                    <p className="text-2xl font-bold text-white">Instagram</p>
-                </div>
-            </section>
-            
-            {/* --- Problem Section --- */}
-            <section className="relative py-20 px-4 overflow-hidden">
-                <div className="absolute -top-20 -right-20 w-96 h-96 opacity-30">
-                     <img src="/images/abstract-wave-2.png" alt="Abstract Wave" />
-                </div>
-                 <div className="absolute bottom-0 left-0 w-64 h-64 opacity-20 transform -translate-x-1/2 translate-y-1/2">
-                     <img src="/images/abstract-orb-2.png" alt="Abstract Orb" className="animate-pulse" />
-                </div>
-                <div className="relative z-10 max-w-4xl mx-auto flex items-center gap-8">
-                    <div className="w-1/2">
-                        <h2 className="text-4xl font-bold text-white mb-6">Are You Tired of Your Videos Getting <span className="text-red-500">Zero Views?</span></h2>
-                        <ul className="space-y-4 text-lg text-brand-text-secondary max-w-2xl">
-                            <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Spending hours brainstorming ideas with no results.</span></li>
-                            <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Struggling to write hooks that grab attention.</span></li>
-                            <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Feeling invisible in a sea of other creators.</span></li>
-                        </ul>
-                    </div>
-                    <div className="w-1/2">
-                        <img src="/images/problem-character-v2.png" alt="Frustrated creator" className="w-full h-auto" />
-                    </div>
-                </div>
-            </section>
+const HomePage = ({ setShowAuthModal }) => {
+    const [topic, setTopic] = useState('');
+    const [selectedPlatforms, setSelectedPlatforms] = useState(['TikTok']);
 
-            {/* --- NEW SOLUTION SECTION --- */}
-            <section className="relative py-20 px-4 overflow-hidden">
-                <div className="relative z-10 max-w-4xl mx-auto flex flex-row-reverse items-center gap-8">
-                    <div className="w-1/2">
-                        <h2 className="text-4xl font-bold text-white mb-6">Now Imagine Turning <span className="text-purple-400">Viewers Into Loyal Followers...</span> Instantly</h2>
-                        <p className="text-lg text-brand-text-secondary space-y-4">
-                           What if your audience didn't just scroll away... but opted in, got nurtured, and became paying customers? That's the magic of Viral Script AI. It captures interest when it's at its peak-and transforms curious viewers into subscribers who want to hear from you.
-                        </p>
+    const togglePlatform = (platform) => {
+        setSelectedPlatforms(prev =>
+            prev.includes(platform)
+                ? prev.filter(p => p !== platform)
+                : [...prev, platform]
+        );
+    };
+
+    return ( 
+        <div className="w-full overflow-hidden relative">
+            <AbstractCanvas />
+            <div className="relative z-10">
+                {/* --- HERO/HEADER SECTION --- */}
+                <section className="relative text-center py-20 md:py-24 px-4 flex flex-col items-center">
+                    <div className="bg-red-500 text-white font-semibold px-6 py-2 rounded-lg mb-8 shadow-lg">
+                        <span>Stop Guessing, Stop Wasting Time, &amp; Start Creating Scripts That Actually Work...</span>
                     </div>
-                    <div className="w-1/2">
-                        <img src="/images/hero-character-v2.png" alt="Confident creator" className="w-full h-auto" />
+                    <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight max-w-4xl">
+                        Revolutionary AI Tech Turns Any
+                        <span className="text-pink-500 px-2">Video Idea</span>
+                        Into Scroll-Stopping,
+                        <span className="bg-purple-500 px-2 rounded-md">AI-Scored Hooks</span>
+                        & Full Scripts
+                        <span className="text-yellow-400 px-2">All In Under 2 Minutes</span>
+                    </h1>
+                    <div className="mt-10 max-w-3xl w-full bg-black/20 border border-white/10 rounded-2xl p-8 space-y-6">
+                        <div>
+                            <h3 className="text-xl font-bold text-white">1. Enter Your Video Idea</h3>
+                            <p className="text-white/70 mt-1">Be as specific or as broad as you like. The AI will handle the rest.</p>
+                            <textarea
+                                value={topic}
+                                onChange={(e) => setTopic(e.target.value)}
+                                placeholder="e.g., A tutorial on how to make the perfect sourdough bread at home"
+                                className="w-full mt-3 bg-black/20 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent h-24 resize-none"
+                            />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold text-white">2. Select Target Platforms</h3>
+                            <p className="text-white/70 mt-1">Choose where you want your video to go viral.</p>
+                            <div className="flex gap-4 mt-3 justify-center">
+                                <button onClick={() => togglePlatform('TikTok')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${selectedPlatforms.includes('TikTok') ? 'bg-blue-500/20 border-blue-400 text-white' : 'bg-white/10 border-transparent text-white/70 hover:bg-white/20'}`}>
+                                    <TikTokIcon /> TikTok
+                                </button>
+                                <button onClick={() => togglePlatform('YouTube')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${selectedPlatforms.includes('YouTube') ? 'bg-red-500/20 border-red-400 text-white' : 'bg-white/10 border-transparent text-white/70 hover:bg-white/20'}`}>
+                                    <YouTubeIcon /> YouTube
+                                </button>
+                                <button onClick={() => togglePlatform('Instagram')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-colors ${selectedPlatforms.includes('Instagram') ? 'bg-pink-500/20 border-pink-400 text-white' : 'bg-white/10 border-transparent text-white/70 hover:bg-white/20'}`}>
+                                    <InstagramIcon /> Instagram
+                                </button>
+                            </div>
+                        </div>
+                        <button onClick={() => setShowAuthModal(true)} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 rounded-lg text-lg flex items-center justify-center gap-2 transition-transform transform hover:scale-105">
+                            Generate Viral Hooks
+                        </button>
                     </div>
-                </div>
-            </section>
+                </section>
+                
+                {/* --- Platforms Section --- */}
+                <section className="py-12 bg-black/10">
+                    <p className="text-center text-white/50 text-sm font-semibold tracking-widest">WORKS WITH YOUR FAVORITE PLATFORMS</p>
+                    <div className="flex justify-center items-center gap-12 mt-4">
+                        <p className="text-2xl font-bold text-white">TikTok</p>
+                        <p className="text-2xl font-bold text-white">YouTube</p>
+                        <p className="text-2xl font-bold text-white">Instagram</p>
+                    </div>
+                </section>
+                
+                {/* --- Problem Section --- */}
+                <section className="relative py-20 px-4 overflow-hidden">
+                    <div className="absolute -top-20 -right-20 w-96 h-96 opacity-30">
+                         <img src="/images/abstract-wave-2.png" alt="Abstract Wave" />
+                    </div>
+                     <div className="absolute bottom-0 left-0 w-64 h-64 opacity-20 transform -translate-x-1/2 translate-y-1/2">
+                         <img src="/images/abstract-orb-2.png" alt="Abstract Orb" className="animate-pulse" />
+                    </div>
+                    <div className="relative z-10 max-w-4xl mx-auto flex items-center gap-8">
+                        <div className="w-1/2">
+                            <h2 className="text-4xl font-bold text-white mb-6">Are You Tired of Your Videos Getting <span className="text-red-500">Zero Views?</span></h2>
+                            <ul className="space-y-4 text-lg text-brand-text-secondary max-w-2xl">
+                                <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Spending hours brainstorming ideas with no results.</span></li>
+                                <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Struggling to write hooks that grab attention.</span></li>
+                                <li className="flex items-start gap-3"><span className="text-red-500 mt-1">✖</span><span>Feeling invisible in a sea of other creators.</span></li>
+                            </ul>
+                        </div>
+                        <div className="w-1/2">
+                            <img src="/images/problem-character-v2.png" alt="Frustrated creator" className="w-full h-auto" />
+                        </div>
+                    </div>
+                </section>
 
-            {/* --- Features Section --- */}
-            <section className="py-20 px-4 bg-white/5">
-                <h2 className="text-4xl font-bold text-center text-white mb-12">The <span className="text-green-400">All-In-One Solution</span> for Viral Content</h2>
-                <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
-                    <FeatureGridItem iconUrl="/images/icon-hooks.png" title="AI-Scored Hooks">Don't just get hooks, get hooks scored by our AI for viral potential.</FeatureGridItem>
-                    <FeatureGridItem iconUrl="/images/icon-script.png" title="Full AI Scriptwriting">Receive a complete script structured for maximum viewer retention.</FeatureGridItem>
-                    <FeatureGridItem iconUrl="/images/icon-plan.png" title="Full Production Plan">Get shot-by-shot visual ideas, audio suggestions, and a hashtag strategy.</FeatureGridItem>
-                    <FeatureGridItem iconUrl="/images/icon-voice.png" title="The Director's Cut">Hear your script in your own voice with AI-powered audio previews.</FeatureGridItem>
-                    <FeatureGridItem iconUrl="/images/icon-calendar.png" title="Content Calendar">Plan your content and track your past ideas with ease.</FeatureGridItem>
-                    <FeatureGridItem iconUrl="/images/icon-tracker.png" title="Performance Tracker">Log your video's performance to unlock personalized AI insights.</FeatureGridItem>
-                </div>
-            </section>
+                {/* --- NEW SOLUTION SECTION --- */}
+                <section className="relative py-20 px-4 overflow-hidden">
+                    <div className="relative z-10 max-w-4xl mx-auto flex flex-row-reverse items-center gap-8">
+                        <div className="w-1/2">
+                            <h2 className="text-4xl font-bold text-white mb-6">Now Imagine Turning <span className="text-purple-400">Viewers Into Loyal Followers...</span> Instantly</h2>
+                            <p className="text-lg text-brand-text-secondary space-y-4">
+                               What if your audience didn't just scroll away... but opted in, got nurtured, and became paying customers? That's the magic of Viral Script AI. It captures interest when it's at its peak-and transforms curious viewers into subscribers who want to hear from you.
+                            </p>
+                        </div>
+                        <div className="w-1/2">
+                            <img src="/images/hero-character-v2.png" alt="Confident creator" className="w-full h-auto" />
+                        </div>
+                    </div>
+                </section>
 
-            {/* --- Testimonials Section --- */}
-            <section className="py-20 px-4">
-                <h2 className="text-4xl font-bold text-center text-white mb-12">Loved by Creators Everywhere</h2>
-                <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-                    <TestimonialCard 
-                        quote="Viral Script AI has saved me hours of brainstorming every week. The 'Director's Cut' feature is a game-changer for my workflow!" 
-                        name="Sarah L." 
-                        title="TikTok Creator" 
-                        avatarUrl="/images/sarah-avatar.png"
-                    />
-                    <TestimonialCard 
-                        quote="The AI-scored hooks are incredibly accurate. My engagement has gone through the roof since I started using this tool." 
-                        name="Mike P." 
-                        title="YouTube Shorts Specialist" 
-                        avatarUrl="/images/mike-avatar.png"
-                    />
-                </div>
-            </section>
+                {/* --- Features Section --- */}
+                <section className="py-20 px-4 bg-white/5">
+                    <h2 className="text-4xl font-bold text-center text-white mb-12">The <span className="text-green-400">All-In-One Solution</span> for Viral Content</h2>
+                    <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
+                        <FeatureGridItem iconUrl="/images/icon-hooks.png" title="AI-Scored Hooks">Don't just get hooks, get hooks scored by our AI for viral potential.</FeatureGridItem>
+                        <FeatureGridItem iconUrl="/images/icon-script.png" title="Full AI Scriptwriting">Receive a complete script structured for maximum viewer retention.</FeatureGridItem>
+                        <FeatureGridItem iconUrl="/images/icon-plan.png" title="Full Production Plan">Get shot-by-shot visual ideas, audio suggestions, and a hashtag strategy.</FeatureGridItem>
+                        <FeatureGridItem iconUrl="/images/icon-voice.png" title="The Director's Cut">Hear your script in your own voice with AI-powered audio previews.</FeatureGridItem>
+                        <FeatureGridItem iconUrl="/images/icon-calendar.png" title="Content Calendar">Plan your content and track your past ideas with ease.</FeatureGridItem>
+                        <FeatureGridItem iconUrl="/images/icon-tracker.png" title="Performance Tracker">Log your video's performance to unlock personalized AI insights.</FeatureGridItem>
+                    </div>
+                </section>
 
-            {/* --- CTA Section --- */}
-            <section className="py-20 px-4 text-center bg-gradient-to-t from-purple-900/50 to-transparent">
-                <h2 className="text-4xl font-bold text-white mb-6">Ready to Go Viral?</h2>
-                <p className="text-lg text-brand-text-secondary max-w-2xl mx-auto mb-8">Stop wasting time and start creating content that gets the attention it deserves. Your first blueprint is on us.</p>
-                <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Get Started for Free</button>
-                <div className="flex justify-center items-center gap-4 mt-8">
-                    <img src="/images/garanee seal.png" alt="Guarantee Seal" className="h-24 w-24" />
-                    <p className="text-white/70">30-Day Money-Back Guarantee</p>
-                </div>
-            </section>
+                {/* --- Testimonials Section --- */}
+                <section className="py-20 px-4">
+                    <h2 className="text-4xl font-bold text-center text-white mb-12">Loved by Creators Everywhere</h2>
+                    <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
+                        <TestimonialCard 
+                            quote="Viral Script AI has saved me hours of brainstorming every week. The 'Director's Cut' feature is a game-changer for my workflow!" 
+                            name="Sarah L." 
+                            title="TikTok Creator" 
+                            avatarUrl="/images/sarah-avatar.png"
+                        />
+                        <TestimonialCard 
+                            quote="The AI-scored hooks are incredibly accurate. My engagement has gone through the roof since I started using this tool." 
+                            name="Mike P." 
+                            title="YouTube Shorts Specialist" 
+                            avatarUrl="/images/mike-avatar.png"
+                        />
+                    </div>
+                </section>
+
+                {/* --- CTA Section --- */}
+                <section className="py-20 px-4 text-center bg-gradient-to-t from-purple-900/50 to-transparent">
+                    <h2 className="text-4xl font-bold text-white mb-6">Ready to Go Viral?</h2>
+                    <p className="text-lg text-brand-text-secondary max-w-2xl mx-auto mb-8">Stop wasting time and start creating content that gets the attention it deserves. Your first blueprint is on us.</p>
+                    <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">Get Started for Free</button>
+                    <div className="flex justify-center items-center gap-4 mt-8">
+                        <img src="/images/garanee seal.png" alt="Guarantee Seal" className="h-24 w-24" />
+                        <p className="text-white/70">30-Day Money-Back Guarantee</p>
+                    </div>
+                </section>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 
 // --- Loading Skeleton Component ---
