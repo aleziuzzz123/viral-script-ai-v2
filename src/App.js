@@ -43,6 +43,32 @@ const LoadingSpinner = () => <svg className="animate-spin h-5 w-5 text-white" xm
 const VoiceIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z" fill="currentColor"></path></svg>;
 const LightbulbIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 22h6M12 18v4M9.31 15.69c.39.39 1.02.39 1.41 0l1.48-1.48c.31-.31.47-.72.47-1.13V12c0-.41-.16-.82-.47-1.13L10.72 9.39c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.5 12l-1.19 1.19c-.38.39-.38 1.03 0 1.42zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 
+// --- NEW PAGE COMPONENTS ---
+const PrivacyPolicyPage = ({ navigate }) => (
+    <div className="max-w-4xl mx-auto py-12 px-4 text-white">
+        <button onClick={() => navigate('home')} className="text-brand-accent mb-8">&larr; Back to Home</button>
+        <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
+        <div className="prose prose-invert text-white/80 space-y-4">
+            <p><strong>Last Updated:</strong> July 25, 2025</p>
+            <p>Welcome to Viral Script AI ("we," "our," or "us"). We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and services.</p>
+            {/* ... Paste the full Privacy Policy text here ... */}
+        </div>
+    </div>
+);
+
+const TermsOfServicePage = ({ navigate }) => (
+    <div className="max-w-4xl mx-auto py-12 px-4 text-white">
+        <button onClick={() => navigate('home')} className="text-brand-accent mb-8">&larr; Back to Home</button>
+        <h1 className="text-3xl font-bold mb-6">Terms of Service</h1>
+        <div className="prose prose-invert text-white/80 space-y-4">
+            <p><strong>Last Updated:</strong> July 25, 2025</p>
+            <p>Please read these Terms of Service ("Terms") carefully before using the Viral Script AI website...</p>
+            {/* ... Paste the full Terms of Service text here ... */}
+        </div>
+    </div>
+);
+
+
 // --- Homepage Components ---
 const FeatureGridItem = ({ iconUrl, title, children }) => (
     <div className="bg-white/5 p-6 rounded-2xl backdrop-blur-sm border border-white/10 text-center transform transition-transform hover:-translate-y-2">
@@ -70,15 +96,11 @@ const HomePage = ({ setShowAuthModal }) => (
     <div className="w-full overflow-hidden relative">
         <AbstractCanvas />
         <div className="relative z-10">
-            
-            {/* --- NEW HERO/HEADER SECTION --- */}
+            {/* --- HERO/HEADER SECTION --- */}
             <section className="relative text-center py-20 md:py-24 px-4 flex flex-col items-center">
-                {/* Top Banner */}
                 <div className="bg-red-500 text-white font-semibold px-6 py-2 rounded-lg mb-8 shadow-lg">
                     <span>Stop Guessing, Stop Wasting Time, &amp; Start Creating Scripts That Actually Work...</span>
                 </div>
-
-                {/* Main Headline */}
                 <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight max-w-4xl">
                     Revolutionary AI Tech Turns Any
                     <span className="text-pink-500 px-2">Video Idea</span>
@@ -87,20 +109,16 @@ const HomePage = ({ setShowAuthModal }) => (
                     & Full Scripts
                     <span className="text-yellow-400 px-2">All In Under 2 Minutes</span>
                 </h1>
-
-                {/* Sub-headline */}
                 <div className="mt-10 border-2 border-dashed border-white/50 rounded-lg px-8 py-4 max-w-3xl">
                     <p className="text-lg text-white/90">Leverage the world's most advanced AI scriptwriter - and finally convert your ideas into REAL views, leads, and sales.</p>
                 </div>
-                
-                {/* Character Image (Positioned at the bottom) */}
                 <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-full max-w-lg h-auto z-20 pointer-events-none">
                     <img src="/images/hero-character-v2.png" alt="Confident content creator presenting" />
                 </div>
             </section>
             
             {/* --- Platforms Section --- */}
-            <section className="pt-32 pb-12 bg-black/10"> {/* Added padding-top to make space for character */}
+            <section className="pt-32 pb-12 bg-black/10">
                 <p className="text-center text-white/50 text-sm font-semibold tracking-widest">WORKS WITH YOUR FAVORITE PLATFORMS</p>
                 <div className="flex justify-center items-center gap-12 mt-4">
                     <p className="text-2xl font-bold text-white">TikTok</p>
@@ -807,13 +825,19 @@ const App = () => {
     const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
     const [activeView, setActiveView] = useState('dashboard');
     const [refreshKey, setRefreshKey] = useState(0);
+    
+    // NEW state for page navigation
+    const [currentPage, setCurrentPage] = useState('home');
+
+    const navigate = (page) => {
+        setCurrentPage(page);
+    };
 
     const handleContentTracked = () => {
         setRefreshKey(prev => prev + 1);
     };
 
     useEffect(() => {
-        setProfileLoading(true);
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
             if (!session) setProfileLoading(false);
@@ -850,9 +874,36 @@ const App = () => {
         }
     }, [session]);
 
+    const renderContent = () => {
+        if (currentPage === 'privacy') {
+            return <PrivacyPolicyPage navigate={navigate} />;
+        }
+        if (currentPage === 'terms') {
+            return <TermsOfServicePage navigate={navigate} />;
+        }
+        
+        // Default content
+        return session ? (
+            <>
+                <nav className="border-b border-white/10 bg-black/20 backdrop-blur-sm">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex">
+                        <button onClick={() => setActiveView('dashboard')} className={`px-4 py-3 font-semibold ${activeView === 'dashboard' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Dashboard</button>
+                        <button onClick={() => setActiveView('calendar')} className={`px-4 py-3 font-semibold ${activeView === 'calendar' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Content Calendar</button>
+                        <button onClick={() => setActiveView('account')} className={`px-4 py-3 font-semibold ${activeView === 'account' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Account</button>
+                    </div>
+                </nav>
+                {activeView === 'dashboard' && <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} onContentTracked={handleContentTracked} refreshKey={refreshKey} />}
+                {activeView === 'calendar' && <CalendarView session={session} voiceProfile={voiceProfile} />}
+                {activeView === 'account' && <AccountView session={session} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />}
+            </>
+        ) : (
+            <HomePage setShowAuthModal={setShowAuthModal} />
+        );
+    };
+
     return (
         <ToastProvider>
-            <div className="bg-brand-background text-brand-text-secondary min-h-screen font-sans">
+            <div className="bg-brand-background text-brand-text-secondary min-h-screen font-sans flex flex-col">
                 {showAuthModal && (
                          <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                               <div className="bg-white/10 border border-white/20 rounded-2xl p-8 max-w-md w-full relative">
@@ -868,11 +919,11 @@ const App = () => {
 
                 <header className="border-b border-white/10 sticky top-0 bg-black/30 backdrop-blur-lg z-40">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                        <h1 className="text-2xl font-bold text-white">Viral Script AI</h1>
+                        <h1 onClick={() => navigate('home')} className="text-2xl font-bold text-white cursor-pointer">Viral Script AI</h1>
                         {session ? (
                             <div className="flex items-center gap-4">
                                 <span className="text-sm text-white/80">Credits: <span className="font-bold text-white">{profileLoading ? '...' : (profile ? profile.credits : 0)}</span></span>
-                                <button onClick={async () => await supabase.auth.signOut()} className="bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg text-sm border border-white/20">Logout</button>
+                                <button onClick={async () => { await supabase.auth.signOut(); navigate('home'); }} className="bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg text-sm border border-white/20">Logout</button>
                             </div>
                         ) : (
                             <button onClick={() => setShowAuthModal(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-2 px-4 rounded-lg">Login / Sign Up</button>
@@ -880,24 +931,21 @@ const App = () => {
                     </div>
                 </header>
 
-                <main>
-                    {session ? (
-                        <>
-                            <nav className="border-b border-white/10 bg-black/20 backdrop-blur-sm">
-                                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex">
-                                    <button onClick={() => setActiveView('dashboard')} className={`px-4 py-3 font-semibold ${activeView === 'dashboard' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Dashboard</button>
-                                    <button onClick={() => setActiveView('calendar')} className={`px-4 py-3 font-semibold ${activeView === 'calendar' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Content Calendar</button>
-                                    <button onClick={() => setActiveView('account')} className={`px-4 py-3 font-semibold ${activeView === 'account' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Account</button>
-                                </div>
-                            </nav>
-                            {activeView === 'dashboard' && <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} onContentTracked={handleContentTracked} refreshKey={refreshKey} />}
-                            {activeView === 'calendar' && <CalendarView session={session} voiceProfile={voiceProfile} />}
-                            {activeView === 'account' && <AccountView session={session} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />}
-                        </>
-                    ) : (
-                        <HomePage setShowAuthModal={setShowAuthModal} />
-                    )}
+                <main className="flex-grow">
+                    {renderContent()}
                 </main>
+
+                {/* --- NEW FOOTER --- */}
+                <footer className="w-full bg-black/20 border-t border-white/10 mt-16 py-8">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white/70">
+                        <div className="flex justify-center gap-6 mb-4">
+                            <button onClick={() => navigate('privacy')} className="hover:text-white">Privacy Policy</button>
+                            <button onClick={() => navigate('terms')} className="hover:text-white">Terms of Service</button>
+                            {/* You can add About and Contact pages following the same pattern */}
+                        </div>
+                        <p>&copy; {new Date().getFullYear()} Viral Script AI. All rights reserved.</p>
+                    </div>
+                </footer>
             </div>
         </ToastProvider>
     );
