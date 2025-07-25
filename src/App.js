@@ -51,7 +51,37 @@ const PrivacyPolicyPage = ({ navigate }) => (
         <div className="prose prose-invert text-white/80 space-y-4">
             <p><strong>Last Updated:</strong> July 25, 2025</p>
             <p>Welcome to Viral Script AI ("we," "our," or "us"). We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and services.</p>
-            {/* ... Paste the full Privacy Policy text here ... */}
+            <h3 className="text-xl font-bold text-white">1. Information We Collect</h3>
+            <p>We may collect personal information that you provide to us directly, such as:</p>
+            <ul className="list-disc list-inside">
+                <li><strong>Account Information:</strong> When you register for an account, we collect your email address and name.</li>
+                <li><strong>User Content:</strong> We collect the video topics and ideas you input into our service to generate scripts.</li>
+                <li><strong>Payment Information:</strong> When you purchase credits, our third-party payment processor (Stripe) may collect your payment card information. We do not store this information on our servers.</li>
+            </ul>
+            <h3 className="text-xl font-bold text-white">2. How We Use Your Information</h3>
+            <p>We use the information we collect to:</p>
+            <ul className="list-disc list-inside">
+                <li>Provide, operate, and maintain our services.</li>
+                <li>Process your transactions and manage your account.</li>
+                <li>Improve our AI models and service offerings.</li>
+                <li>Communicate with you, including sending service-related emails and responding to your inquiries.</li>
+                <li>Prevent fraudulent activity and ensure the security of our platform.</li>
+            </ul>
+            <h3 className="text-xl font-bold text-white">3. Sharing Your Information</h3>
+            <p>We do not sell, trade, or otherwise transfer your personally identifiable information to outside parties, except in the following circumstances:</p>
+            <ul className="list-disc list-inside">
+                <li>With service providers who assist us in operating our website and conducting our business (e.g., payment processors, cloud hosting).</li>
+                <li>To comply with legal obligations, such as a court order or government request.</li>
+                <li>To protect our rights, property, or safety, and that of our users or others.</li>
+            </ul>
+            <h3 className="text-xl font-bold text-white">4. Data Security</h3>
+            <p>We implement a variety of security measures to maintain the safety of your personal information. However, no method of transmission over the Internet or method of electronic storage is 100% secure.</p>
+            <h3 className="text-xl font-bold text-white">5. Your Rights</h3>
+            <p>You have the right to access, update, or delete your personal information at any time by logging into your account settings or contacting us directly.</p>
+            <h3 className="text-xl font-bold text-white">6. Changes to This Policy</h3>
+            <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.</p>
+            <h3 className="text-xl font-bold text-white">7. Contact Us</h3>
+            <p>If you have any questions about this Privacy Policy, please contact us at: contact@viralhookai.com</p>
         </div>
     </div>
 );
@@ -62,8 +92,27 @@ const TermsOfServicePage = ({ navigate }) => (
         <h1 className="text-3xl font-bold mb-6">Terms of Service</h1>
         <div className="prose prose-invert text-white/80 space-y-4">
             <p><strong>Last Updated:</strong> July 25, 2025</p>
-            <p>Please read these Terms of Service ("Terms") carefully before using the Viral Script AI website...</p>
-            {/* ... Paste the full Terms of Service text here ... */}
+            <p>Please read these Terms of Service ("Terms") carefully before using the Viral Script AI website and services ("Service") operated by us.</p>
+            <h3 className="text-xl font-bold text-white">1. Acceptance of Terms</h3>
+            <p>By accessing or using the Service, you agree to be bound by these Terms. If you disagree with any part of the terms, then you may not access the Service.</p>
+            <h3 className="text-xl font-bold text-white">2. Description of Service</h3>
+            <p>Viral Script AI provides users with AI-generated video scripts, hooks, and production plans based on user-submitted topics. The Service operates on a credit-based system, where users purchase credits to generate content.</p>
+            <h3 className="text-xl font-bold text-white">3. User Accounts</h3>
+            <p>You are responsible for safeguarding your account information and for any activities or actions under your account. You must notify us immediately upon becoming aware of any breach of security or unauthorized use of your account.</p>
+            <h3 className="text-xl font-bold text-white">4. Use of Content</h3>
+            <p>You retain ownership of the ideas and topics you submit to the Service. We grant you a worldwide, perpetual, non-exclusive, royalty-free license to use the AI-generated scripts and content for your personal and commercial purposes. You are responsible for ensuring that your use of the generated content complies with all applicable laws and platform policies (e.g., TikTok, YouTube).</p>
+            <h3 className="text-xl font-bold text-white">5. Prohibited Uses</h3>
+            <p>You agree not to use the Service to generate content that is unlawful, defamatory, hateful, or that infringes on the rights of any third party.</p>
+            <h3 className="text-xl font-bold text-white">6. Termination</h3>
+            <p>We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms.</p>
+            <h3 className="text-xl font-bold text-white">7. Disclaimer</h3>
+            <p>The Service is provided on an "AS IS" and "AS AVAILABLE" basis. We do not warrant that the results obtained from the use of the Service will be accurate, reliable, or meet your requirements.</p>
+            <h3 className="text-xl font-bold text-white">8. Limitation of Liability</h3>
+            <p>In no event shall Viral Script AI, nor its directors, employees, or partners, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.</p>
+            <h3 className="text-xl font-bold text-white">9. Governing Law</h3>
+            <p>These Terms shall be governed and construed in accordance with the laws of [Your Country/State], without regard to its conflict of law provisions.</p>
+            <h3 className="text-xl font-bold text-white">10. Contact Us</h3>
+            <p>If you have any questions about these Terms, please contact us at: contact@viralhookai.com</p>
         </div>
     </div>
 );
