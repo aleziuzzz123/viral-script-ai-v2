@@ -888,6 +888,17 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
                 </div>
                 <div className="lg:col-span-1 space-y-8">
                     <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                        <h3 className="text-lg font-bold text-white">Next Scheduled Post</h3>
+                        <p className="text-white/70 mt-2">You have no upcoming posts scheduled.</p>
+                        <button className="text-brand-accent font-semibold mt-2">Generate a new script to get started &rarr;</button>
+                    </div>
+                    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                        <h3 className="text-lg font-bold text-white flex items-center gap-2">🔥 Top Trend Today</h3>
+                        <h4 className="font-semibold text-white mt-4">Plot Twists, Power Moves & Awkward Audio</h4>
+                        <p className="text-white/70 mt-2 text-sm">This trend features videos with unexpected turns, clever misdirections, and punchline payoffs, often using awkward or "cringe" audio for humorous effect. Popular audio includes "Lion's Roar" and "Alibi."</p>
+                        <button className="text-brand-accent font-semibold mt-2">Generate ideas for this trend &rarr;</button>
+                    </div>
+                    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
                         <div className="flex items-center gap-3 mb-4 text-white">
                             <CreditIcon />
                             <h3 className="text-lg font-bold">Credit Balance</h3>
