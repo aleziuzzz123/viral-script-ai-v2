@@ -782,9 +782,6 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
     const [isLoading, setIsLoading] = useState(false);
     const [generatedContent, setGeneratedContent] = useState(null);
     const [topic, setTopic] = useState('');
-    const [goal, setGoal] = useState('Go Viral / Maximize Reach');
-    const [tone, setTone] = useState('Engaging');
-    const [audience, setAudience] = useState('');
     const [selectedPlatforms, setSelectedPlatforms] = useState(['TikTok']);
     const { addToast } = useToast();
 
@@ -811,7 +808,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
             const response = await fetch('/.netlify/functions/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic, goal, tone, audience, platforms: selectedPlatforms, userId: session.user.id }),
+                body: JSON.stringify({ topic, platforms: selectedPlatforms, userId: session.user.id }),
             });
             if (!response.ok) throw new Error('AI failed to generate content.');
             const blueprintData = await response.json();
@@ -831,7 +828,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
         } finally {
             setIsLoading(false);
         }
-    }, [topic, goal, tone, audience, selectedPlatforms, profile, session, setProfile, setShowBuyCreditsModal, addToast]);
+    }, [topic, selectedPlatforms, profile, session, setProfile, setShowBuyCreditsModal, addToast]);
     
     const handlePerformanceSaved = () => {
         setGeneratedContent(null);
@@ -1042,3 +1039,4 @@ const App = () => {
 };
 
 export default App;
+
