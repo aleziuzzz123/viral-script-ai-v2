@@ -28,18 +28,35 @@ exports.handler = async function (event, context) {
     // 2. Prepare the request for the OpenAI API
     const API_URL = 'https://api.openai.com/v1/chat/completions';
     
-    // This prompt is adapted for the OpenAI model.
+    // --- NEW, MORE POWERFUL PROMPT ---
     const prompt = `
-      Analyze these sequential video frames from a short-form video (e.g., TikTok, Reel, Short).
-      My goal is to maximize the video's virality. Based on these frames, provide a comprehensive analysis.
+      You are a world-class viral video strategist for platforms like TikTok, YouTube Shorts, and Instagram Reels.
+      Analyze these sequential video frames and provide a "Viral Video Deep Dive".
 
-      Evaluate the following key virality factors:
-      - **Hook (First 3 seconds):** Is the opening compelling? Does it create immediate curiosity or state a clear value proposition?
-      - **Visual Quality & Clarity:** Are the visuals clear and engaging? Is the subject matter easy to understand?
-      - **Pacing & Storytelling:** Do the frames suggest a clear story or progression? Does the pacing feel right for a short-form video?
-      - **Emotional Impact:** Does the content evoke strong emotions (e.g., humor, surprise, inspiration, controversy)?
-
-      Return your analysis strictly in a JSON object with the following keys: "virality_score", "viral_potential", "what_works", "improvements".
+      Your analysis must be brutally honest but constructive, focusing on actionable advice.
+      
+      Return your analysis strictly in a JSON object with the following structure:
+      {
+        "virality_score": number, // The overall score from 0-100.
+        "key_metrics": {
+          "hook_strength": number, // Score 0-10 for the first 3 seconds' ability to grab attention.
+          "visual_clarity": number, // Score 0-10 for how clear and high-quality the visuals are.
+          "engagement_potential": number // Score 0-10 for the likelihood of generating comments and shares.
+        },
+        "analysis_summary": string, // A 1-2 sentence summary of your overall findings.
+        "detailed_breakdown": [
+          {
+            "area": string, // e.g., "The Hook (First 3 Seconds)", "Visual Storytelling", "Pacing & Editing"
+            "feedback": string, // Detailed, constructive feedback for this area.
+            "suggestion": string // A specific, actionable improvement for this area.
+          }
+        ],
+        "creative_suggestions": {
+          "alternative_hooks": [string], // An array of 3 specific, ready-to-use alternative hook ideas.
+          "thumbnail_text": string, // A compelling text overlay suggestion for the first frame/thumbnail.
+          "audio_suggestion": string // A suggestion for the *type* of trending audio that would fit the video's mood.
+        }
+      }
     `;
 
     // Map the base64 strings to the format the OpenAI Vision API expects.
@@ -62,7 +79,7 @@ exports.handler = async function (event, context) {
           ]
         }
       ],
-      max_tokens: 1000,
+      max_tokens: 2048, // Increased tokens for more detailed analysis
     };
 
     // 3. Call the OpenAI API
