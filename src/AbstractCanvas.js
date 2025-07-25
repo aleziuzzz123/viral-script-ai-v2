@@ -131,4 +131,3 @@ const AbstractCanvas = () => {
 };
 
 export default AbstractCanvas;
-
