@@ -6,6 +6,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './App.css';
 import AbstractCanvas from './AbstractCanvas';
+import { useVideoProcessor } from './useVideoProcessor'; // <-- IMPORT THE NEW HOOK
 
 // --- Toast Notification System ---
 const ToastContext = createContext();
@@ -45,6 +46,9 @@ const LightbulbIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill
 const TikTokIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.38 1.92-3.54 2.96-5.94 2.96-1.97 0-3.82-.65-5.31-1.76-1.23-.9-2.15-2.1-2.7-3.45-.42-1.04-.6-2.18-.6-3.33-.03-1.92.31-3.85.96-5.66.63-1.78 1.6-3.4 2.8-4.74 1.05-1.17 2.31-2.08 3.7-2.66.49-.2.98-.36 1.49-.46.01.82.02 1.64.01 2.46l-.04.64c-.45.12-.88.29-1.3.49-1.94.94-3.36 2.73-3.76 4.75-.18.9-.28 1.84-.28 2.78 0 1.01.17 1.99.52 2.89.59 1.5 1.73 2.5 3.19 2.89.43.11.88.17 1.32.17 1.1 0 2.15-.3 3.09-.89.88-.55 1.5-1.36 1.82-2.34.24-.78.35-1.6.35-2.43.01-2.18.01-4.36.01-6.54 0-.21.05-.42.15-.61.2-.4.5-.68.88-.88.25-.13.5-.25.75-.35.01-.81.01-1.63.02-2.44a4.32 4.32 0 0 1-.25.03c-.8.1-1.55.39-2.2.83-1.09.73-1.85 1.8-2.2 3.02-.13.43-.21.88-.22 1.33-.02 1.47-.01 2.95-.01 4.42 0 .1-.01.2-.02.31.02-1.1.02-2.21.02-3.31z"/></svg>;
 const YouTubeIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M21.582 7.337c-.227-.81-.887-1.469-1.697-1.697C18.267 5.207 12 5.207 12 5.207s-6.267 0-7.885.433c-.81.228-1.47.887-1.697 1.697C2.002 8.954 2 12 2 12s.002 3.046.42 4.663c.227.81.887 1.469 1.697 1.697C5.733 18.793 12 18.793 12 18.793s6.267 0 7.885-.433c.81-.228 1.47-.887 1.697-1.697C21.998 15.046 22 12 22 12s-.002-3.046-.418-4.663zM9.75 14.86V9.14L15.22 12 9.75 14.86z"/></svg>;
 const InstagramIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"/></svg>;
+const UploadIcon = () => <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white/30 mx-auto mb-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>;
+const CheckCircleIcon = () => <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-green-300"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>;
+const XCircleIcon = () => <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-red-300"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>;
 
 // --- NEW PAGE COMPONENTS ---
 const PrivacyPolicyPage = ({ navigate }) => (
@@ -204,7 +208,7 @@ const HomePage = ({ setShowAuthModal }) => {
                         </button>
                     </div>
                 </section>
-                
+               
                 {/* --- Platforms Section --- */}
                 <section className="py-12 bg-black/10">
                     <p className="text-center text-white/50 text-sm font-semibold tracking-widest">WORKS WITH YOUR FAVORITE PLATFORMS</p>
@@ -214,14 +218,14 @@ const HomePage = ({ setShowAuthModal }) => {
                         <p className="text-2xl font-bold text-white">Instagram</p>
                     </div>
                 </section>
-                
+               
                 {/* --- Problem Section --- */}
                 <section className="relative py-20 px-4 overflow-hidden">
                     <div className="absolute -top-20 -right-20 w-96 h-96 opacity-30">
-                         <img src="/images/abstract-wave-2.png" alt="Abstract Wave" />
+                        <img src="/images/abstract-wave-2.png" alt="Abstract Wave" />
                     </div>
                      <div className="absolute bottom-0 left-0 w-64 h-64 opacity-20 transform -translate-x-1/2 translate-y-1/2">
-                         <img src="/images/abstract-orb-2.png" alt="Abstract Orb" className="animate-pulse" />
+                        <img src="/images/abstract-orb-2.png" alt="Abstract Orb" className="animate-pulse" />
                     </div>
                     <div className="relative z-10 max-w-4xl mx-auto flex items-center gap-8">
                         <div className="w-1/2">
@@ -244,7 +248,7 @@ const HomePage = ({ setShowAuthModal }) => {
                         <div className="w-1/2">
                             <h2 className="text-4xl font-bold text-white mb-6">Now Imagine Turning <span className="text-purple-400">Viewers Into Loyal Followers...</span> Instantly</h2>
                             <p className="text-lg text-brand-text-secondary space-y-4">
-                               What if your audience didn't just scroll away... but opted in, got nurtured, and became paying customers? That's the magic of Viral Script AI. It captures interest when it's at its peak-and transforms curious viewers into subscribers who want to hear from you.
+                                What if your audience didn't just scroll away... but opted in, got nurtured, and became paying customers? That's the magic of Viral Script AI. It captures interest when it's at its peak-and transforms curious viewers into subscribers who want to hear from you.
                             </p>
                         </div>
                         <div className="w-1/2">
@@ -427,12 +431,12 @@ const ResultsDisplay = ({ content, session, voiceProfile, onPerformanceSaved }) 
             default: return 'bg-gray-500/10 text-gray-400 border-gray-500/30';
         }
     };
-    
+   
     return (
         <>
             {showScheduleModal && <ScheduleModal blueprint={content.blueprint} session={session} setShow={setShowScheduleModal} onScheduled={() => {}} />}
             {showPerformanceModal && <PerformanceModal contentId={content.id} initialData={content} setShow={setShowPerformanceModal} onSaved={onPerformanceSaved} />}
-            
+           
             <div className="mt-8 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
                 <div className="flex justify-between items-center p-4 border-b border-white/10">
                     <div className="flex space-x-2">
@@ -483,7 +487,7 @@ const CalendarView = ({ session, voiceProfile }) => {
         }
         return null;
     };
-    
+   
     const postedVideos = events.filter(e => e.is_posted);
 
     return (
@@ -812,7 +816,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
             });
             if (!response.ok) throw new Error('AI failed to generate content.');
             const blueprintData = await response.json();
-            
+           
             const { data: newContent, error: saveError } = await supabase
                 .from('generated_content')
                 .insert({ user_id: session.user.id, topic: topic, blueprint: blueprintData })
@@ -820,7 +824,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
                 .single();
 
             if (saveError) throw saveError;
-            
+           
             setGeneratedContent(newContent);
             setTopic('');
         } catch (err) {
@@ -829,7 +833,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
             setIsLoading(false);
         }
     }, [topic, selectedPlatforms, profile, session, setProfile, setShowBuyCreditsModal, addToast]);
-    
+   
     const handlePerformanceSaved = () => {
         setGeneratedContent(null);
         onContentTracked();
@@ -849,7 +853,7 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
                                 <p className="text-white/70 mt-1">Welcome back, {session.user.email.split('@')[0]}!</p>
                             </div>
                         </div>
-                        
+                       
                         <div className="space-y-6">
                             <div>
                                 <h3 className="text-xl font-bold text-white">1. Enter Your Video Idea</h3>
@@ -913,6 +917,184 @@ const Dashboard = ({ session, profile, setProfile, setShowBuyCreditsModal, voice
     );
 };
 
+// --- NEW: ViralVideoAnalyzer Component ---
+const ViralVideoAnalyzer = ({ session, profile, setProfile, setShowBuyCreditsModal, addToast }) => {
+    const [videoFile, setVideoFile] = useState(null);
+    const [videoUrl, setVideoUrl] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [analysisResult, setAnalysisResult] = useState(null);
+    const { extractFrames } = useVideoProcessor();
+    const dropzoneRef = useRef(null);
+
+    const handleFileSelect = (file) => {
+        if (file && file.type.startsWith('video/')) {
+            setVideoFile(file);
+            setVideoUrl(URL.createObjectURL(file));
+            setAnalysisResult(null);
+        } else {
+            addToast('Please upload a valid video file.', 'error');
+        }
+    };
+    
+    // We are not using react-dropzone anymore, but keeping the logic for manual handling
+    const handleManualDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleFileSelect(e.dataTransfer.files[0]);
+        }
+    };
+    
+    const handleManualDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleAnalyze = async () => {
+        if (!videoFile) {
+            addToast('Please upload a video first.', 'error');
+            return;
+        }
+        if (!profile || profile.credits < 1) {
+            setShowBuyCreditsModal(true);
+            return;
+        }
+
+        setIsLoading(true);
+        setAnalysisResult(null);
+
+        try {
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ credits: profile.credits - 1 })
+                .eq('id', session.user.id);
+
+            if (updateError) throw updateError;
+            setProfile(prev => ({ ...prev, credits: prev.credits - 1 }));
+
+            const frames = await extractFrames(videoFile, 10);
+            if (frames.length === 0) {
+                throw new Error("Could not extract frames from the video.");
+            }
+
+            const response = await fetch('/.netlify/functions/analyze-video', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ frames }),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Analysis failed.');
+            }
+
+            const data = await response.json();
+            setAnalysisResult(data);
+            addToast('Analysis complete!', 'success');
+
+        } catch (err) {
+            addToast(err.message, 'error');
+            const { error: refundError } = await supabase
+                .from('profiles')
+                .update({ credits: profile.credits })
+                .eq('id', session.user.id);
+            if (!refundError) {
+                 setProfile(prev => ({ ...prev, credits: prev.credits + 1 }));
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    const ScoreCircle = ({ score }) => {
+        const circumference = 2 * Math.PI * 52;
+        const offset = circumference - (score / 100) * circumference;
+        let strokeColor = 'stroke-purple-400';
+        if (score < 40) strokeColor = 'stroke-red-400';
+        else if (score < 75) strokeColor = 'stroke-yellow-400';
+        else strokeColor = 'stroke-green-400';
+
+        return (
+            <div className="relative w-40 h-40 mx-auto">
+                <svg className="w-full h-full" viewBox="0 0 120 120">
+                    <circle className="stroke-current text-white/10" strokeWidth="8" fill="transparent" r="52" cx="60" cy="60" />
+                    <circle className={`stroke-current ${strokeColor} transition-all duration-1000 ease-out`} strokeWidth="8" strokeLinecap="round" fill="transparent" r="52" cx="60" cy="60" style={{ strokeDasharray: circumference, strokeDashoffset: offset }} transform="rotate(-90 60 60)" />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-4xl font-bold text-white">{score}</span>
+                    <span className="text-sm font-medium text-white/70">Virality Score</span>
+                </div>
+            </div>
+        );
+    };
+
+    return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+                <h2 className="text-3xl font-bold text-white">Viral Video Analyzer</h2>
+                <p className="text-white/70 mt-1 mb-6">Upload your video to get an AI-powered virality score and improvement tips.</p>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                    <div className="space-y-4">
+                        <label
+                            htmlFor="video-upload-input"
+                            ref={dropzoneRef}
+                            onDrop={handleManualDrop}
+                            onDragOver={handleManualDragOver}
+                            className="border-2 border-dashed border-white/20 rounded-2xl p-8 text-center cursor-pointer transition-colors hover:border-brand-accent hover:bg-brand-accent/10 flex flex-col items-center justify-center h-48"
+                        >
+                            <UploadIcon />
+                            <p className="mt-2 text-white font-semibold">Drag & drop video or click to upload</p>
+                            <p className="text-xs text-white/50 mt-1">MP4, MOV, WEBM</p>
+                        </label>
+                        <input id="video-upload-input" type="file" className="hidden" accept="video/*" onChange={(e) => handleFileSelect(e.target.files[0])} />
+
+                        {videoUrl && (
+                            <div className="space-y-4">
+                                <video src={videoUrl} controls className="w-full rounded-lg" />
+                                <button
+                                    onClick={handleAnalyze}
+                                    disabled={isLoading}
+                                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
+                                >
+                                    {isLoading ? <LoadingSpinner /> : 'Analyze Video (1 Credit)'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="bg-black/20 border border-white/10 rounded-2xl p-6 min-h-[300px]">
+                        <h3 className="text-xl font-bold text-white mb-4">AI Analysis</h3>
+                        {isLoading ? (
+                            <div className="flex items-center justify-center h-full text-white/70"><LoadingSpinner /><span className="ml-2">AI is analyzing...</span></div>
+                        ) : analysisResult ? (
+                            <div className="space-y-6">
+                                <ScoreCircle score={analysisResult.virality_score} />
+                                <div className="text-center">
+                                    <span className={`px-3 py-1 text-sm font-semibold rounded-full ${analysisResult.viral_potential === 'Low' ? 'bg-red-500/20 text-red-300' : analysisResult.viral_potential === 'Medium' ? 'bg-yellow-500/20 text-yellow-300' : 'bg-green-500/20 text-green-300'}`}>
+                                        {analysisResult.viral_potential} Potential
+                                    </span>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-white flex items-center gap-2 mb-2"><CheckCircleIcon /> What Works Well</h4>
+                                    <ul className="list-disc list-inside space-y-1 text-sm text-white/80">{analysisResult.what_works.map((item, i) => <li key={i}>{item}</li>)}</ul>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-white flex items-center gap-2 mb-2"><XCircleIcon /> Areas for Improvement</h4>
+                                    <ul className="list-disc list-inside space-y-1 text-sm text-white/80">{analysisResult.improvements.map((item, i) => <li key={i}>{item}</li>)}</ul>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-white/50"><p>Your analysis will appear here.</p></div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 // --- Main App Component ---
 const App = () => {
     const [session, setSession] = useState(null);
@@ -923,8 +1105,7 @@ const App = () => {
     const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
     const [activeView, setActiveView] = useState('dashboard');
     const [refreshKey, setRefreshKey] = useState(0);
-    
-    // NEW state for page navigation
+   
     const [currentPage, setCurrentPage] = useState('home');
 
     const navigate = (page) => {
@@ -973,26 +1154,25 @@ const App = () => {
     }, [session]);
 
     const renderContent = () => {
-        if (currentPage === 'privacy') {
-            return <PrivacyPolicyPage navigate={navigate} />;
-        }
-        if (currentPage === 'terms') {
-            return <TermsOfServicePage navigate={navigate} />;
-        }
-        
-        // Default content
+        if (currentPage === 'privacy') return <PrivacyPolicyPage navigate={navigate} />;
+        if (currentPage === 'terms') return <TermsOfServicePage navigate={navigate} />;
+       
         return session ? (
             <>
                 <nav className="border-b border-white/10 bg-black/20 backdrop-blur-sm">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex">
                         <button onClick={() => setActiveView('dashboard')} className={`px-4 py-3 font-semibold ${activeView === 'dashboard' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Dashboard</button>
+                        <button onClick={() => setActiveView('analyzer')} className={`px-4 py-3 font-semibold ${activeView === 'analyzer' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Video Analyzer</button>
                         <button onClick={() => setActiveView('calendar')} className={`px-4 py-3 font-semibold ${activeView === 'calendar' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Content Calendar</button>
                         <button onClick={() => setActiveView('account')} className={`px-4 py-3 font-semibold ${activeView === 'account' ? 'text-brand-accent border-b-2 border-brand-accent' : 'text-white/70'}`}>Account</button>
                     </div>
                 </nav>
-                {activeView === 'dashboard' && <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} onContentTracked={handleContentTracked} refreshKey={refreshKey} />}
-                {activeView === 'calendar' && <CalendarView session={session} voiceProfile={voiceProfile} />}
-                {activeView === 'account' && <AccountView session={session} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />}
+                <ToastProvider>
+                    {activeView === 'dashboard' && <Dashboard session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} voiceProfile={voiceProfile} onContentTracked={handleContentTracked} refreshKey={refreshKey} />}
+                    {activeView === 'analyzer' && <ViralVideoAnalyzer session={session} profile={profile} setProfile={setProfile} setShowBuyCreditsModal={setShowBuyCreditsModal} addToast={useToast().addToast} />}
+                    {activeView === 'calendar' && <CalendarView session={session} voiceProfile={voiceProfile} />}
+                    {activeView === 'account' && <AccountView session={session} voiceProfile={voiceProfile} setVoiceProfile={setVoiceProfile} />}
+                </ToastProvider>
             </>
         ) : (
             <HomePage setShowAuthModal={setShowAuthModal} />
@@ -1003,16 +1183,16 @@ const App = () => {
         <ToastProvider>
             <div className="bg-brand-background text-brand-text-secondary min-h-screen font-sans flex flex-col">
                 {showAuthModal && (
-                         <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                              <div className="bg-white/10 border border-white/20 rounded-2xl p-8 max-w-md w-full relative">
-                                   <button onClick={() => setShowAuthModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
-                                   <h3 className="text-2xl font-bold text-center text-white mb-2">Your Blueprint is Ready!</h3>
-                                   <p className="text-white/70 text-center mb-6">Create a free account to view it.</p>
-                                   <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google']} theme="dark" />
-                              </div>
-                         </div>
+                    <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="bg-white/10 border border-white/20 rounded-2xl p-8 max-w-md w-full relative">
+                            <button onClick={() => setShowAuthModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+                            <h3 className="text-2xl font-bold text-center text-white mb-2">Your Blueprint is Ready!</h3>
+                            <p className="text-white/70 text-center mb-6">Create a free account to view it.</p>
+                            <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google']} theme="dark" />
+                        </div>
+                    </div>
                 )}
-                
+               
                 {showBuyCreditsModal && <BuyCreditsModal setShowBuyCreditsModal={setShowBuyCreditsModal} session={session} />}
 
                 <header className="border-b border-white/10 sticky top-0 bg-black/30 backdrop-blur-lg z-40">
@@ -1033,13 +1213,11 @@ const App = () => {
                     {renderContent()}
                 </main>
 
-                {/* --- NEW FOOTER --- */}
                 <footer className="w-full bg-black/20 border-t border-white/10 mt-16 py-8">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white/70">
                         <div className="flex justify-center gap-6 mb-4">
                             <button onClick={() => navigate('privacy')} className="hover:text-white">Privacy Policy</button>
                             <button onClick={() => navigate('terms')} className="hover:text-white">Terms of Service</button>
-                            {/* You can add About and Contact pages following the same pattern */}
                         </div>
                         <p>&copy; {new Date().getFullYear()} Viral Script AI. All rights reserved.</p>
                     </div>
