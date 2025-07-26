@@ -34,14 +34,8 @@ const ToastProvider = ({ children }) => {
 };
 const useToast = () => useContext(ToastContext);
 
-// --- SVG Icons ---
+// --- SVG Icons (Simplified for App.js) ---
 const CreditIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 8.5h20M7 15.5h3M12 15.5h2M2 12.031V17c0 2 1 3 3 3h14c2 0 3-1 3-3V8c0-2-1-3-3-3H5c-2 0-3 1-3 3" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-const VisualsIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="currentColor"/></svg>;
-const AudioIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="currentColor"/></svg>;
-const HashtagIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-accent"><path d="M10.59 4.59C10.21 4.21 9.7 4 9.17 4H4c-1.1 0-2 .9-2 2v5.17c0 .53.21 1.04.59 1.41l8.83 8.83c.78.78 2.05.78 2.83 0l5.17-5.17c.78-.78.78-2.05 0-2.83l-8.83-8.83zM6.5 8C5.67 8 5 7.33 5 6.5S5.67 5 6.5 5 8 5.67 8 6.5 7.33 8 6.5 8z" fill="currentColor"/></svg>;
-const PlayIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>;
-const LoadingSpinner = () => <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>;
-const VoiceIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-brand-text-secondary"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z" fill="currentColor"></path></svg>;
 const LightbulbIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 22h6M12 18v4M9.31 15.69c.39.39 1.02.39 1.41 0l1.48-1.48c.31-.31.47-.72.47-1.13V12c0-.41-.16-.82-.47-1.13L10.72 9.39c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.5 12l-1.19 1.19c-.38.39-.38 1.03 0 1.42zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const TikTokIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.38 1.92-3.54 2.96-5.94 2.96-1.97 0-3.82-.65-5.31-1.76-1.23-.9-2.15-2.1-2.7-3.45-.42-1.04-.6-2.18-.6-3.33-.03-1.92.31-3.85.96-5.66.63-1.78 1.6-3.4 2.8-4.74 1.05-1.17 2.31-2.08 3.7-2.66.49-.2.98-.36 1.49-.46.01.82.02 1.64.01 2.46l-.04.64c-.45.12-.88.29-1.3.49-1.94.94-3.36 2.73-3.76 4.75-.18.9-.28 1.84-.28 2.78 0 1.01.17 1.99.52 2.89.59 1.5 1.73 2.5 3.19 2.89.43.11.88.17 1.32.17 1.1 0 2.15-.3 3.09-.89.88-.55 1.5-1.36 1.82-2.34.24-.78.35-1.6.35-2.43.01-2.18.01-4.36.01-6.54 0-.21.05-.42.15-.61.2-.4.5-.68.88-.88.25-.13.5-.25.75-.35.01-.81.01-1.63.02-2.44a4.32 4.32 0 0 1-.25.03c-.8.1-1.55.39-2.2.83-1.09.73-1.85 1.8-2.2 3.02-.13.43-.21.88-.22 1.33-.02 1.47-.01 2.95-.01 4.42 0 .1-.01.2-.02.31.02-1.1.02-2.21.02-3.31z"/></svg>;
 const YouTubeIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M21.582 7.337c-.227-.81-.887-1.469-1.697-1.697C18.267 5.207 12 5.207 12 5.207s-6.267 0-7.885.433c-.81.228-1.47.887-1.697 1.697C2.002 8.954 2 12 2 12s.002 3.046.42 4.663c.227.81.887 1.469 1.697 1.697C5.733 18.793 12 18.793 12 18.793s6.267 0 7.885-.433c.81-.228 1.47-.887 1.697-1.697C21.998 15.046 22 12 22 12s-.002-3.046-.418-4.663zM9.75 14.86V9.14L15.22 12 9.75 14.86z"/></svg>;
@@ -72,28 +66,6 @@ const TermsOfServicePage = ({ navigate }) => (
 
 
 // --- Homepage Components ---
-const FeatureGridItem = ({ iconUrl, title, children }) => (
-    <div className="bg-white/5 p-6 rounded-2xl backdrop-blur-sm border border-white/10 text-center transform transition-transform hover:-translate-y-2">
-        <img src={iconUrl} alt={`${title} icon`} className="h-20 w-20 mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
-        <p className="text-brand-text-secondary">{children}</p>
-    </div>
-);
-
-const TestimonialCard = ({ quote, name, title, avatarUrl }) => ( 
-    <div className="bg-white/5 p-8 rounded-2xl backdrop-blur-sm border border-white/10">
-        <div className="flex text-yellow-400 mb-4">★★★★★</div>
-        <p className="text-white italic mb-6 text-lg">"{quote}"</p>
-        <div className="flex items-center gap-4">
-            <img src={avatarUrl} alt={name} className="w-14 h-14 rounded-full object-cover" />
-            <div>
-                <p className="font-bold text-white text-lg">{name}</p>
-                <p className="text-brand-text-secondary">{title}</p>
-            </div>
-        </div>
-    </div>
-);
-
 const HomePage = ({ setShowAuthModal }) => {
     const [topic, setTopic] = useState('');
     const [selectedPlatforms, setSelectedPlatforms] = useState(['TikTok']);
